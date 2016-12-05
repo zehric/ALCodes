@@ -46,7 +46,7 @@ function main() {
         target = person
       }
     }
-    if (target.max_hp - target.hp < character.attack - 10 && target.hp / target.max_hp > .6) {
+    if (target && target.max_hp - target.hp < character.attack - 10 && target.hp / target.max_hp > .6) {
       target = null
     }
     if (can_heal(target)) {
