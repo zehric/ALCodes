@@ -42,7 +42,7 @@ function main() {
     target = get_player(people[0])
     for (let name of people) {
       var person = get_player(name)
-      if (person && person.hp / person.max_hp < target.hp / target.max_hp) {
+      if (person && target && person.hp / person.max_hp < target.hp / target.max_hp) {
         target = person
       }
     }
