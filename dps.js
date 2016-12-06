@@ -1,5 +1,6 @@
 var attack_mode = true
 var kite = true
+var attack_only_maxHP = false
 
 on_party_invite = function (name) {
   if (name === "Glass") accept_party_invite(name)
@@ -28,6 +29,9 @@ function main() {
   var dY = target.real_y - character.real_y
   var dist = Math.hypot(dX, dY) - character.range + 3
   var theta = Math.atan2(dY, dX)
+  if (in_attack_range(target) && target.attack >= 200) {
+	  theta += Math.PI/3
+  }
   if (kite || !in_attack_range(target)) {
     move(character.real_x + dist * Math.cos(theta),
          character.real_y + dist * Math.sin(theta))
@@ -51,7 +55,7 @@ function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-    if (current.hp >= current.max_hp) continue;
+    if (attack_only_maxHP && current.hp >= current.max_hp) continue;
     if (current.type != "monster" || current.dead || !can_move_to(current)) continue;
     if (current.max_hp > max_hp || current.xp < min_xp) continue;
     if (target == null || current.xp / current.max_hp > target.xp / target.max_hp) {

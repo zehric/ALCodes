@@ -21,7 +21,7 @@ function main() {
 
   var target = get_targeted_monster()
   if (!target) {
-    target = get_best_monster(4000, 1500)
+    target = get_best_monster(80001, 1000)
     if (target) {
       change_target(target)
     } else {
@@ -33,7 +33,10 @@ function main() {
   var dX = target.real_x - character.real_x
   var dY = target.real_y - character.real_y
   var dist = Math.hypot(dX, dY) - character.range + 3
-  var theta = Math.atan2(dY, dX) + Math.PI/4
+  var theta = Math.atan2(dY, dX)
+  if (in_attack_range(target) && target.attack >= 200) {
+	  theta += Math.PI/3
+  }
   if (kite || !in_attack_range(target)) {
     move(character.real_x + dist * Math.cos(theta),
          character.real_y + dist * Math.sin(theta))
@@ -57,7 +60,7 @@ function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-    if (current.hp >= current.max_hp) continue;
+    // if (current.hp >= current.max_hp) continue;
     if (current.type != "monster" || current.dead || !can_move_to(current)) continue;
     if (current.max_hp > max_hp || current.xp < min_xp) continue;
     if (target == null || current.xp / current.max_hp > target.xp / target.max_hp) {
