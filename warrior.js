@@ -6,15 +6,15 @@ on_party_invite = function (name) {
 }
 
 function main() {
- potions()
- loot()
+  potions()
+  loot()
 
- if (!attack_mode) {
+  if (!attack_mode) {
    return
- }
+  }
 
- var target = get_targeted_monster()
- if (!target) {
+  var target = get_targeted_monster()
+  if (!target) {
    target = get_best_monster(4000, 1500)
    if (target) {
      change_target(target)
@@ -22,20 +22,20 @@ function main() {
      set_message("No Monsters")
      return
    }
- }
+  }
 
- var dX = target.real_x - character.real_x
- var dY = target.real_y - character.real_y
- var dist = Math.hypot(dX, dY) - character.range + 3
- var theta = Math.atan2(dY, dX)
- if (kite || !in_attack_range(target)) {
+  var dX = target.real_x - character.real_x
+  var dY = target.real_y - character.real_y
+  var dist = Math.hypot(dX, dY) - character.range + 3
+  var theta = Math.atan2(dY, dX)
+  if (kite || !in_attack_range(target)) {
    move(character.real_x + dist * Math.cos(theta),
         character.real_y + dist * Math.sin(theta))
- }
- if (can_attack(target)) {
+  }
+  if (can_attack(target)) {
    set_message("Attacking")
    attack(target)
- }
+  }
 }
 
 function potions() {
