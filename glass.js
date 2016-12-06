@@ -33,7 +33,7 @@ function main() {
   var dX = target.real_x - character.real_x
   var dY = target.real_y - character.real_y
   var dist = Math.hypot(dX, dY) - character.range + 3
-  var theta = Math.atan2(dY, dX)
+  var theta = Math.atan2(dY, dX) + Math.PI/4
   if (kite || !in_attack_range(target)) {
     move(character.real_x + dist * Math.cos(theta),
          character.real_y + dist * Math.sin(theta))

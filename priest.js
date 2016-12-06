@@ -6,6 +6,7 @@ var people = parent.party_list
 
 on_party_invite = function (name) {
   if (name === "Glass") accept_party_invite(name)
+  people = parent.party_list
 }
 
 function main() {
