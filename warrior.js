@@ -51,7 +51,10 @@ function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-
+    if (current.mtype === "mvampire") {
+      target = current
+      break
+    }
     if (current.type != "monster" || current.dead || !can_move_to(current)) continue;
     if (current.max_hp > max_hp || current.xp < min_xp) continue;
     if (target == null || current.xp / current.max_hp > target.xp / target.max_hp) {

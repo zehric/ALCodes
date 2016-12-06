@@ -15,7 +15,7 @@ function main() {
 
   var target = get_targeted_monster()
   if (!target) {
-    target = get_best_monster(4000, 1500)
+    target = get_best_monster(120001, 1500)
     if (target) {
       change_target(target)
     } else {
