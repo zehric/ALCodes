@@ -1,14 +1,35 @@
 var attack_mode = true
 var kite = true
-var attack_only_maxHP = false
+var attack_maxHP_only = false
+var max_monster_hp = 130000
+var min_monster_xp = 1500
+
+var whitelist = ['gem1', 'armorbox', 'weaponbox']
+var priority_monster = 'skeletor'
+
+var party = ['Tools', 'Glass', 'bleevl', 'bleevlsss', 'AidElk', 'Edylc',
+             'LeonXu', 'LeonXu2']
+
+var party_online = party.filter(function (person) {
+  return get_player(person)
+})
 
 on_party_invite = function (name) {
-  if (name === "Glass") accept_party_invite(name)
+  if (party.includes(name)) {
+    accept_party_invite(name)
+  }
+}
+
+for (let i = 0; i < people.length; i++) {
+  if (parent.party_list.indexOf(people[i]) == -1) {
+    send_party_invite(people[i])
+  }
 }
 
 function main() {
   potions()
   loot()
+  exchangeItem()
 
   if (!attack_mode) {
     return
@@ -16,7 +37,7 @@ function main() {
 
   var target = get_targeted_monster()
   if (!target) {
-    target = get_best_monster(120001, 1500)
+    target = get_best_monster(max_monster_hp, min_monster_xp)
     if (target) {
       change_target(target)
     } else {
@@ -42,6 +63,16 @@ function main() {
   }
 }
 
+function exchangeItem() {
+  for (let i = 0; i < character.items.length; i++) {
+    let c = character.items[i];
+    if (c && whitelist.includes(c.name)) {
+      exchange(i)
+      parent.e_item = i;
+    }
+  }
+}
+
 function potions() {
   if (new Date() < parent.next_potion) return;
   if (character.max_hp - character.hp > 200) {
@@ -55,7 +86,11 @@ function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-    if (attack_only_maxHP && current.hp >= current.max_hp) continue;
+    if (current.mtype === priority_monster) {
+      target = current
+      break
+    }
+    if (attack_maxHP_only && current.hp >= current.max_hp) continue;
     if (current.type != "monster" || current.dead || !can_move_to(current)) continue;
     if (current.max_hp > max_hp || current.xp < min_xp) continue;
     if (target == null || current.xp / current.max_hp > target.xp / target.max_hp) {
@@ -69,4 +104,3 @@ function get_best_monster(max_hp, min_xp) {
   return target
 }
 setInterval(main, 1600/8);
-

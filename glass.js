@@ -1,6 +1,8 @@
 var attack_mode = true
 var kite = true
 
+var whitelist = []
+
 var people = ['Tools', 'Glass', 'bleevl', 'bleevlsss', 'AidElk', 'Edylc'].filter(function (person) {
   return get_player(person)
 })
@@ -14,6 +16,7 @@ for (let i = 0; i < people.length; i++) {
 function main() {
   potions()
   loot()
+  exchangeItem()
 
   if (!attack_mode) {
     return
@@ -53,6 +56,16 @@ function potions() {
 		parent.use('hp')
 	} else if (character.max_mp - character.mp > 300) {
     parent.use('mp')
+  }
+}
+
+function exchangeItem() {
+  for (let i = 0; i < character.items.length; i++) {
+    let c = character.items[i];
+    if (c && whitelist.includes(c.name)) {
+      exchange(i)
+      parent.e_item = i;
+    }
   }
 }
 

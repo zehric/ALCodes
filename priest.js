@@ -4,9 +4,24 @@ var kite = true
 
 var people = parent.party_list
 
+var party = ['Tools', 'Glass', 'bleevl', 'bleevlsss', 'AidElk', 'Edylc',
+             'LeonXu', 'LeonXu2']
+
+var party_online = party.filter(function (person) {
+  return get_player(person)
+})
+
 on_party_invite = function (name) {
-  if (name === "Glass") accept_party_invite(name)
-  people = parent.party_list
+  if (party.includes(name)) {
+    accept_party_invite(name)
+    people = parent.party_list
+  }
+}
+
+for (let i = 0; i < people.length; i++) {
+  if (parent.party_list.indexOf(people[i]) == -1) {
+    send_party_invite(people[i])
+  }
 }
 
 function main() {
@@ -88,6 +103,18 @@ function curse(target) {
       name: "curse",
       id: target.id
     });
+  }
+}
+
+function exchangeItem() {
+  for (let i = 0; i < character.items.length; i++) {
+    let c = character.items[i];
+    if (c) {
+      if (c && whitelist.includes(c.name)) {
+        exchange(i)
+        parent.e_item = i;
+      }
+    }
   }
 }
 

@@ -1,8 +1,28 @@
 var attack_mode = true
 var kite = false
+var max_monster_hp = 130000
+var min_monster_xp = 1500
+
+var whitelist = ['gem1', 'armorbox', 'weaponbox']
+var priority_monster = 'skeletor'
+
+var party = ['Tools', 'Glass', 'bleevl', 'bleevlsss', 'AidElk', 'Edylc',
+             'LeonXu', 'LeonXu2']
+
+var party_online = party.filter(function (person) {
+  return get_player(person)
+})
 
 on_party_invite = function (name) {
-  if (name === "Glass") accept_party_invite(name)
+  if (party.includes(name)) {
+    accept_party_invite(name)
+  }
+}
+
+for (let i = 0; i < people.length; i++) {
+  if (parent.party_list.indexOf(people[i]) == -1) {
+    send_party_invite(people[i])
+  }
 }
 
 function main() {
@@ -15,7 +35,7 @@ function main() {
 
   var target = get_targeted_monster()
   if (!target) {
-   target = get_best_monster(4000, 1500)
+   target = get_best_monster(max_monster_hp, min_monster_xp)
    if (target) {
      change_target(target)
    } else {
@@ -47,11 +67,21 @@ function potions() {
   }
 }
 
+function exchangeItem() {
+  for (let i = 0; i < character.items.length; i++) {
+    let c = character.items[i]
+    if (c && whitelist.includes(c.name)) {
+      exchange(i)
+      parent.e_item = i
+    }
+  }
+}
+
 function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-    if (current.mtype === "mvampire") {
+    if (current.mtype === priority_monster) {
       target = current
       break
     }
