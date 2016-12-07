@@ -99,7 +99,7 @@ function main() {
     if (!monster || monster && monster.hp < 8000) {
       return
     }
-    if (in_attack_range(monster)) {
+    if (in_attack_range(monster) && monster.target === 'bleevl') {
       curse(monster)
     } else {
       move(
