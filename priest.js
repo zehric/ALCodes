@@ -55,16 +55,18 @@ function main() {
   }
 
   if (heal_mode) {
-    target = get_player(people[0])
-    for (let name of people) {
+    target = get_player(parent.party_list[0])
+    for (let name of parent.party_list) {
       var person = get_player(name)
-      if (person && target && person.hp / person.max_hp < target.hp / target.max_hp) {
+      if (person && target && person.hp / person.max_hp < target.hp / target.max_hp
+          || target && target.in !== character.map) {
         target = person
       }
     }
-    if (target && target.max_hp - target.hp < character.attack - 10 && target.hp / target.max_hp > .6) {
+    if (target && target.max_hp - target.hp < character.attack - 50 && target.hp / target.max_hp > .6) {
       target = null
     }
+
     if (can_heal(target)) {
       set_message("Healing " + target.name)
       heal(target)
@@ -82,7 +84,10 @@ function main() {
            character.real_y + dist * Math.sin(theta))
     }
   } else if (target && !in_attack_range(target)) {
-    move(target.real_x, target.real_y)
+    move(
+			character.real_x+(target.real_x-character.real_x)/2,
+			character.real_y+(target.real_y-character.real_y)/2
+		)
   }
 }
 
