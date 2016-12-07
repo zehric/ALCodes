@@ -86,7 +86,7 @@ function get_best_monster(max_hp, min_xp) {
   var target = null
   for (id in parent.entities) {
     var current = parent.entities[id]
-    if (current.mtype === priority_monster) {
+    if (current.mtype === priority_monster && current.target === 'bleevl') {
       target = current
       break
     }

@@ -1,5 +1,6 @@
 var attack_mode = false
 var heal_mode = true
+var curse_mode = true
 var kite = true
 
 var people = parent.party_list
@@ -88,6 +89,24 @@ function main() {
 			character.real_x+(target.real_x-character.real_x)/2,
 			character.real_y+(target.real_y-character.real_y)/2
 		)
+  }
+
+  var monster
+  var bleev
+  if (curse_mode) {
+    if (!bleev) bleev = get_player('bleevl')
+    if (!monster) monster = get_target_of(bleev);
+    if (!monster || monster && monster.hp < 8000) {
+      return
+    }
+    if (in_attack_range(monster)) {
+      curse(monster)
+    } else {
+      move(
+			  character.real_x+(monster.real_x-character.real_x)/2,
+		  	character.real_y+(monster.real_y-character.real_y)/2
+		  )
+    }
   }
 }
 
