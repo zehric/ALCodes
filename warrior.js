@@ -19,9 +19,9 @@ on_party_invite = function (name) {
   }
 }
 
-for (let i = 0; i < people.length; i++) {
-  if (parent.party_list.indexOf(people[i]) == -1) {
-    send_party_invite(people[i])
+for (let i = 0; i < party.length; i++) {
+  if (!parent.party_list.includes(party[i])) {
+    send_party_invite(party[i])
   }
 }
 
