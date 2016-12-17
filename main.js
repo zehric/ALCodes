@@ -71,4 +71,4 @@ setTimeout(function() {
   
 }, 500);
 
-$.getScript('https://cdn.rawgit.com/zehric/ALCodes/master/functions.js');
+$.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
