@@ -75,8 +75,8 @@ function rangeMove(target) {
 }
 
 function getBestMonster(maxHP, minXP, currentTarget) {
-  if (currentTarget && !currentTarget.target 
-      || currentTarget.target === character.name) {
+  if (currentTarget && (!currentTarget.target 
+      || currentTarget.target === character.name)) {
     return currentTarget;
   }
   var target = null;
