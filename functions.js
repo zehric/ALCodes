@@ -327,3 +327,45 @@ function uceItem() {
     }
   }, 200);
 }
+
+
+var attackInterval;
+
+setCorrectingInterval(function() { // enchant code
+  if (autoUCE) {
+    uceItem();
+  }
+}, 1000);
+
+setCorrectingInterval(function() { // move and attack code
+  potions();
+  loot();
+  if (!doAttack) return;
+  var target = get_target();
+  if (target && (target.dead || target.rip)) {
+    console.log('entered');
+    target = null;
+    if (attackInterval) {
+      attackInterval.clear();
+      attackInterval = null;
+    }
+  }
+  target = getBestMonster(maxMonsterHP, minMonsterXP, target);
+  if (!target || !can_move_to(target) || target.dead) {
+    set_message('No monsters');
+    return;
+  } else {
+    change_target(target);
+  }
+  if (target && !attackInterval) {
+    attackInterval = setCorrectingInterval(function () {
+      var t = get_target();
+      if (!t.dead && !t.rip && can_attack(t)) {
+        attack(get_target());
+      }
+    }, 1 / character.frequency);
+  }
+  if (target && !target.dead && !target.rip) {
+    rangeMove(target);
+  }
+}, 100);
