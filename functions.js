@@ -70,12 +70,12 @@ function rangeMove(target) {
   if (!in_attack_range(target)) {
     move(newX, newY);
   } else if (kite) {
-    var farX = character.real_x + (dist - 200) * Math.cos(theta);
-    var farY = character.real_y + (dist - 200) * Math.sin(theta);
+    var farX = character.real_x + (dist - 100) * Math.cos(theta);
+    var farY = character.real_y + (dist - 100) * Math.sin(theta);
     while (!can_move_to(farX, farY) && theta < 100) {
       theta += 1.5;
-      farX = character.real_x + (dist - 200) * Math.cos(theta);
-      farY = character.real_y + (dist - 200) * Math.sin(theta);
+      farX = character.real_x + (dist - 100) * Math.cos(theta);
+      farY = character.real_y + (dist - 100) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
       newY = character.real_y + dist * Math.sin(theta);
     }
