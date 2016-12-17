@@ -1,31 +1,31 @@
-var doAttack = true;
-var kite = true;
-var autoUpgrade = true;
-var autoCompound = true;
-var autoExchange = true;
-var upgradeTo = 7;
-var upgradeItems = []; // if this is not empty, will only upgrade specific type
+doAttack = true;
+kite = true;
+autoUpgrade = true;
+autoCompound = true;
+autoExchange = true;
+upgradeTo = 7;
+upgradeItems = []; // if this is not empty, will only upgrade specific type
                        // ie. 'claw', 'staff', etc. Item needs to be in inv, 
                        // if not buyable from a merchant. Otherwise, will
                        // try to upgrade everything
 
-var party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
+party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
              'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
              'bleeeeevl'];
 
-var useHP = 200;
-var useMP = 300;
+useHP = 200;
+useMP = 300;
 // use hpot or mpot when lacking this much
 
-var useAbilities = false; // in pve
-var maxMonsterHP = 5000;
-var minMonsterXP = 500;
+useAbilities = false; // in pve
+maxMonsterHP = 5000;
+minMonsterXP = 500;
 
-var priorityMonsters = ['mvampire'];
+priorityMonsters = ['mvampire'];
 // use for strong mobs that need a party to kill, in no particular order
-var solo = false; // try to solo the priority monster
+solo = false; // try to solo the priority monster
 
-var tanks = ['bleevl'];
+tanks = ['bleevl'];
 // if not empty, only attacks priority monsters that are targeting listed tanks
 
 setTimeout(function() {
@@ -73,4 +73,4 @@ setTimeout(function() {
   
 }, 500);
 
-
+$.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
