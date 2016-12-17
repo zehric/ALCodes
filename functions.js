@@ -73,11 +73,12 @@ function rangeMove(target) {
   if (!in_attack_range(target)) {
     move(newX, newY);
   } else if (kite) {
-    if (!can_move_to(newX, newY)) {
-      theta += Math.PI / 2;
+    while (!can_move_to(newX, newY)) {
+      theta += Math.PI / 3;
+      newX = character.real_x + dist * Math.cos(theta);
+      newY = character.real_y + dist * Math.sin(theta);
     }
-    move(character.real_x + dist * Math.cos(theta),
-         character.real_y + dist * Math.sin(theta))
+    move(newX, newY);
   }
 }
 
