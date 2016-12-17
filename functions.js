@@ -64,7 +64,7 @@ function rangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
   var dist = Math.hypot(dX, dY) - character.range;
-  var theta = Math.atan2(dY, dX);
+  var theta = Math.atan2(dY, dX) + Math.PI / 4;
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (!in_attack_range(target)) {
@@ -74,7 +74,7 @@ function rangeMove(target) {
     var farY = character.real_y + (dist - 60) * Math.sin(theta);
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY)) && 
         theta < 100) {
-      theta += .5;
+      theta += .1;
       farX = character.real_x + (dist - 60) * Math.cos(theta);
       farY = character.real_y + (dist - 60) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
