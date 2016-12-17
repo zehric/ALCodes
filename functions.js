@@ -74,7 +74,11 @@ function rangeMove(target) {
   }
 }
 
-function getBestMonster(maxHP, minXP) {
+function getBestMonster(maxHP, minXP, currentTarget) {
+  if (currentTarget && !currentTarget.target 
+      || currentTarget.target === character.name) {
+    return currentTarget;
+  }
   var target = null;
   for (id in parent.entities) {
     var current = parent.entities[id];

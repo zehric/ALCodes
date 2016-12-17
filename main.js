@@ -1,8 +1,6 @@
 doAttack = true;
 kite = true;
-autoUpgrade = true;
-autoCompound = true;
-autoExchange = true;
+autoUCE = true; // auto upgrade/compound/exchange
 upgradeTo = 7;
 upgradeItems = []; // if this is not empty, will only upgrade specific type
                        // ie. 'claw', 'staff', etc. Item needs to be in inv, 
@@ -33,7 +31,9 @@ setTimeout(function() {
   var attackInterval;
 
   setCorrectingInterval(function() { // enchant code
-    uceItem();
+    if (autoUCE) {
+      uceItem();
+    }
   }, 1000);
 
   setCorrectingInterval(function() { // move and attack code
@@ -49,14 +49,12 @@ setTimeout(function() {
         attackInterval = null;
       }
     }
-    if (!target) {
-      target = getBestMonster(maxMonsterHP, minMonsterXP);
-      if (!target || !can_move_to(target) || target.dead) {
-        set_message('No monsters');
-        return;
-      } else {
-        change_target(target);
-      }
+    target = getBestMonster(maxMonsterHP, minMonsterXP, target);
+    if (!target || !can_move_to(target) || target.dead) {
+      set_message('No monsters');
+      return;
+    } else {
+      change_target(target);
     }
     if (target && !attackInterval) {
       attackInterval = setCorrectingInterval(function () {
