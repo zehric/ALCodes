@@ -7,8 +7,8 @@ upgradeItems = []; // if this is not empty, will only upgrade specific type
                        // if not buyable from a merchant. Otherwise, will
                        // try to upgrade everything
 
-xBoundaries = [-227, 276]; 
-yBoundaries = [-1580, -643]; 
+xBoundaries = []; 
+yBoundaries = []; 
 // if not empty, don't go past these coordinates when kiting
 
 party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
