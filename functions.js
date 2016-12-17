@@ -343,7 +343,6 @@ setCorrectingInterval(function() { // move and attack code
   if (!doAttack) return;
   var target = get_target();
   if (target && (target.dead || target.rip)) {
-    console.log('entered');
     target = null;
     if (attackInterval) {
       attackInterval.clear();
