@@ -8,8 +8,8 @@ upgradeItems = []; // if this is not empty, will only upgrade specific type
                        // try to upgrade everything
 
 party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
-             'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
-             'bleeeeevl'];
+         'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
+         'bleeeeevl'];
 
 useHP = 200;
 useMP = 300;
