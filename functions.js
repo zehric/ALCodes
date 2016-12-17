@@ -65,16 +65,17 @@ function rangeMove(target) {
   var dY = target.real_y - character.real_y;
   var dist = Math.hypot(dX, dY) - character.range;
   var theta = Math.atan2(dY, dX);
-  // if (in_attack_range(target) && target.attack >= 200) {
-	  // theta += Math.PI/3
-  // }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (!in_attack_range(target)) {
     move(newX, newY);
   } else if (kite) {
-    while (!can_move_to(newX, newY)) {
-      theta += Math.PI / 2;
+    var farX = character.real_x + (dist - 200) * Math.cos(theta);
+    var farY = character.real_y + (dist - 200) * Math.sin(theta);
+    while (!can_move_to(farX, farY)) {
+      theta += 1.5;
+      farX = character.real_x + (dist - 200) * Math.cos(theta);
+      farY = character.real_y + (dist - 200) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
       newY = character.real_y + dist * Math.sin(theta);
     }
