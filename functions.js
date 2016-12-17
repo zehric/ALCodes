@@ -68,9 +68,16 @@ function rangeMove(target) {
   // if (in_attack_range(target) && target.attack >= 200) {
 	  // theta += Math.PI/3
   // }
-  if (kite || !in_attack_range(target)) {
+  var newX = character.real_x + dist * Math.cos(theta);
+  var newY = character.real_y + dist * Math.sin(theta);
+  if (!in_attack_range(target)) {
+    move(newX, newY);
+  } else if (kite) {
+    if (!can_move_to(newX, newY)) {
+      theta += Math.PI / 2;
+    }
     move(character.real_x + dist * Math.cos(theta),
-         character.real_y + dist * Math.sin(theta));
+         character.real_y + dist * Math.sin(theta))
   }
 }
 
