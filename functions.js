@@ -382,4 +382,4 @@ setCorrectingInterval(function() { // move and attack code
   if (target && !target.dead && !target.rip) {
     rangeMove(target);
   }
-}, 100);
+}, loopInterval);

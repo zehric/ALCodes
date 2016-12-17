@@ -32,4 +32,6 @@ solo = false; // try to solo the priority monster
 tanks = ['bleevl'];
 // if not empty, only attacks priority monsters that are targeting listed tanks
 
+loopInterval = 100; // increase this if you are disconnecting
+
 $.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
