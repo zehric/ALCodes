@@ -74,7 +74,7 @@ function rangeMove(target) {
     move(newX, newY);
   } else if (kite) {
     while (!can_move_to(newX, newY)) {
-      theta += Math.PI / 3;
+      theta += Math.PI / 2;
       newX = character.real_x + dist * Math.cos(theta);
       newY = character.real_y + dist * Math.sin(theta);
     }
