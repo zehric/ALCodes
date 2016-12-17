@@ -357,6 +357,7 @@ setCorrectingInterval(function() { // move and attack code
     change_target(target);
   }
   if (target && !attackInterval) {
+    set_message('Attacking ' + target.mtype);
     attackInterval = setCorrectingInterval(function () {
       var t = get_target();
       if (!t.dead && !t.rip && can_attack(t)) {
