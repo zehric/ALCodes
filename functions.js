@@ -272,7 +272,7 @@ function uceItem() {
       toUpgrades[item] = emptySlots.shift();
       if (character.gold >= parent.G.items[item].g && 
           (scrolls['scroll0'] || 
-            character.gold >= parent.G.items[item.g] + 1000)) {
+            character.gold >= parent.G.items[item].g + 1000)) {
         buy(item, 1);
         if (!scrolls['scroll0']) {
           scrolls['scroll0'] = [null, 1];
