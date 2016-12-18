@@ -108,7 +108,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        (can_move_to(current) || 
+        !current.npc && (can_move_to(current) || 
           parent.distance(character, current) <= current.range + 10)) {
       if (party.includes(current.name)) {
         allies.push(current);
