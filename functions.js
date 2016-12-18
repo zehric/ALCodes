@@ -101,11 +101,17 @@ function searchTargets(maxHP, minXP, currentTarget) {
         enemies.push(current);
       }
     }
+    if (character.ctype === 'priest' && current.type === 'character' &&
+        party.includes(current.name) && current.hp / current.max_hp < healAt &&
+        (target.type !== 'character' || 
+          current.hp / current.max_hp < target.hp / target.max_hp)) {
+      target = current;
+    }
     if (priorityMonsters.includes(current.mtype) && 
         (tanks.includes(current.target) || solo)) {
       return current;
     }
-    if (can_move_to(current) &&
+    if (can_move_to(current) && target.type !== 'character' &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         current.max_hp <= maxHP && current.xp >= minXP && 
@@ -442,6 +448,14 @@ function useAbilityOn(target) {
   }
 }
 
+function healPlayer(target) {
+  if (can_heal(target)) {
+    heal(target);
+  } else if (can_move_to(target)) {
+    rangeMove(target);
+  }
+}
+
 function curse(target) {
   if (new Date() > parent.next_skill.curse && !target.cursed) {
     lastcurse = new Date();
@@ -519,13 +533,18 @@ setCorrectingInterval(function() { // move and attack code
     target = null;
     parent.ctarget = null;
   }
-  if ((!target || target.dead || target.rip) && attackInterval) {
+  if ((!target || target.dead || target.rip || !can_attack(target)) && 
+      attackInterval) {
     attackInterval.clear();
     attackInterval = null;
   }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (target && target.players) {
     doPVP(target);
+    return;
+  }
+  if (target && target.type === 'character' && party.includes(target.name)) {
+    healPlayer(target);
     return;
   }
   if (target && target.type === 'character') {
