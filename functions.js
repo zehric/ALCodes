@@ -103,13 +103,16 @@ function searchTargets(maxHP, minXP, currentTarget) {
     }
     if (character.ctype === 'priest' && current.type === 'character' &&
         party.includes(current.name) && current.hp / current.max_hp < healAt &&
-        (target.type !== 'character' || 
+        (!target || target.type !== 'character' || 
           current.hp / current.max_hp < target.hp / target.max_hp)) {
       target = current;
     }
-    if (priorityMonsters.includes(current.mtype) && 
-        (tanks.includes(current.target) || solo)) {
-      return current;
+    if (priorityMonsters.includes(current.mtype)) {
+      if (tanks.includes(current.target) || solo) {
+        return current;
+      } else {
+        continue;
+      }
     }
     if (can_move_to(current) && (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
@@ -428,7 +431,7 @@ function attackPlayer(player) {
 
 function attackLoop () {
   var t = get_target();
-  if (t && t.type === 'character') {
+  if (t && t.type === 'character' || useAbilities) {
     useAbilityOn(t);
   }
   if (t && !t.dead && !t.rip && can_attack(t)) {
@@ -437,6 +440,7 @@ function attackLoop () {
 }
 
 function useAbilityOn(target) {
+  if (!target || target.dead || target.rip) return;
   if (character.ctype === 'rogue' || character.ctype === 'warrior') {
     return;
   } else if (character.ctype === 'ranger') {
@@ -457,7 +461,8 @@ function healPlayer(target) {
 }
 
 function curse(target) {
-  if (new Date() > parent.next_skill.curse && !target.cursed) {
+  if ((!parent.next_skill.curse || 
+      new Date() > parent.next_skill.curse) && !target.cursed) {
     lastcurse = new Date();
     parent.socket.emit("ability", {
       name: "curse",
@@ -467,7 +472,8 @@ function curse(target) {
 }
 
 function invis() {
-  if (!character.invis && new Date() > parent.next_skill.invis) {
+  if (!character.invis && (!parent.next_skill.curse ||
+      new Date() > parent.next_skill.invis)) {
     parent.socket.emit("ability", {
       name: "invis",
     });
@@ -475,7 +481,7 @@ function invis() {
 }
 
 function burst(target) {
-  if (new Date() > parent.next_skill.burst) {
+  if (!parent.next_skill.burst || new Date() > parent.next_skill.burst) {
     lastburst = new Date();
     buy('mpot1', 1);
     parent.socket.emit("ability", {
@@ -486,7 +492,8 @@ function burst(target) {
 }
 
 function taunt(target) {
-  if (new Date() > parent.next_skill.taunt && !target.taunted) {
+  if ((!parent.next_skill.taunt || new Date() > parent.next_skill.taunt) && 
+      !target.taunted) {
     lasttaunt = new Date();
     parent.socket.emit("ability", {
       name: "taunt",
@@ -496,7 +503,7 @@ function taunt(target) {
 }
 
 function charge() {
-  if (new Date() > parent.next_skill.charge) {
+  if (!parent.next_skill.charge || new Date() > parent.next_skill.charge) {
     lastcharge = new Date();
     parent.socket.emit("ability", {
       name: "charge",
@@ -505,7 +512,8 @@ function charge() {
 }
 
 function supershot(target) {
-  if (new Date() > parent.next_skill.supershot) {
+  if (!parent.next_skill.supershot || 
+      new Date() > parent.next_skill.supershot) {
     lastsupershot = new Date();
     buy('mpot1', 1);
     parent.socket.emit("ability", {
