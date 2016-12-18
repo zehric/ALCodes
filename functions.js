@@ -522,11 +522,11 @@ setCorrectingInterval(function() { // move and attack code
     attackInterval = null;
   }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
-  if (target.players) {
+  if (target && target.players) {
     doPVP(target);
     return;
   }
-  if (target.type === 'character') {
+  if (target && target.type === 'character') {
     attackPlayer(target);
     return;
   }
