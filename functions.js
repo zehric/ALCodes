@@ -396,6 +396,7 @@ function attackPlayer(player) {
   }
   if (parent.distance(character, player) > character.range) {
     if (can_move_to(player)) {
+      change_target(player);
       if (character.ctype === 'warrior') {
         charge();
       }
@@ -404,6 +405,7 @@ function attackPlayer(player) {
       game_log('cannot move to player');
     }
   } else if (can_attack(player) && !player.rip) {
+    change_target(player);
     if (character.ctype === 'warrior') {
       charge();
     }
@@ -518,7 +520,8 @@ setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
   if (!doAttack) return;
-  if (strongEnemy && new Date() - strongEnemy < 60000) return;
+  if (character.invis && strongEnemy && 
+      new Date() - strongEnemy < 60000) return;
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
