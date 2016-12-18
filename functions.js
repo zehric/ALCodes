@@ -240,6 +240,7 @@ function uceItem() {
           if (equipped && equipped.name === item.name && 
               equipped.level < item.level && 
               equipped.stat_type === item.stat_type) {
+            parent.socket.emit('unequip', {slot: slot});
             equip(i);
             break;
           }
