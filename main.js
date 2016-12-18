@@ -1,12 +1,10 @@
 /* General Config */
 doAttack = character.ctype !== 'merchant';
-kite = character.range > 50 && true; // change to false to make kite false
+kite = character.range > 50 && true; // false to manually override no kiting
 autoUCE = true; // auto upgrade/compound/exchange
 upgradeTo = 7;
-upgradeItems = []; // if this is not empty, will only upgrade specific type
-                       // ie. 'claw', 'staff', etc. Item needs to be in inv, 
-                       // if not buyable from a merchant. Otherwise, will
-                       // try to upgrade everything
+upgradeItems = []; // if empty, will upgrade everything you are wearing
+                   // that can be bought
 
 xBoundaries = []; 
 yBoundaries = []; 
@@ -33,7 +31,7 @@ priorityMonsters = ['mvampire'];
 solo = false; // try to solo the priority monster
 
 tanks = ['bleevl'];
-// if not empty, only attacks priority monsters that are targeting listed tanks
+// if not empty, only attacks priority monsters that are targeting those listed
 
 loopInterval = 100; // increase this if you are disconnecting
 

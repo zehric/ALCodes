@@ -142,7 +142,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
 function potions() {
   if (new Date() > parent.next_potion) {
     if (character.hp < buyHPPotAt) {
-      buy('hpot0', 1);
+      buy('hpot1', 1);
     } else if (character.mp < buyMPPotAt) {
       buy('mpot0', 1);
     }
@@ -249,6 +249,9 @@ function uceItem() {
       emptySlots.push(i);
     }
   }
+  if (emptySlots.length === 0) {
+    return;
+  }
 
   for (let item in toUpgrades) { // buy items and add to scrolls
     let index = toUpgrades[item];
@@ -288,8 +291,8 @@ function uceItem() {
       let cs = correctCScroll(itemObject);
       if (scrolls[cs] && scrolls[cs][0] !== null && character.gold >= 
             parent.G.items[cs].g *
-          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || !scrolls[s] &&
-          character.gold >= parent.G.items[cs].g) {
+          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || 
+            !scrolls[cs] && character.gold >= parent.G.items[cs].g) {
         if (!scrolls[cs]) {
           scrolls[cs] = [null, 1];
         } else {
