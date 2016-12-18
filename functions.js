@@ -29,6 +29,19 @@ window.setCorrectingInterval = (function(func, delay) {
     }
   };
 });
+function showTransports(e) {
+  if (e.keyCode === 66) {
+    parent.socket.emit('transport', {to: 'jail'});
+  } else if (e.keyCode === 86) {
+    parent.render_transports_npc();
+  }
+}
+
+parent.window.addEventListener('keydown', showTransports);
+
+on_destroy = function () {
+  parent.window.removeEventListener('keydown', showTransports);
+}
 
 on_party_invite = function (name) {
   if (party.includes(name)) {
