@@ -391,6 +391,9 @@ function flee() {
 }
 
 function attackPlayer(player) {
+  if (character.ctype === 'rogue') {
+    invis();
+  }
   if (parent.distance(character, player) > character.range) {
     if (can_move_to(player)) {
       if (character.ctype === 'warrior') {
@@ -420,6 +423,9 @@ function attackLoop () {
     useAbilityOn(t);
   }
   if (t && !t.dead && !t.rip && can_attack(t)) {
+    if (character.invis) {
+      lastSneak = new Date();
+    }
     attack(get_target());
   }
 }
@@ -512,6 +518,7 @@ setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
   if (!doAttack) return;
+  if (strongEnemy && new Date() - strongEnemy < 60000) return;
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
