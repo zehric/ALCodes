@@ -378,6 +378,7 @@ function doPVP(targets) {
 
 var strongEnemy;
 function flee() {
+  if (character.invis) return;
   if (character.ctype === 'rogue' && new Date() > parent.next_skill.invis) {
     invis();
     strongEnemy = new Date();
