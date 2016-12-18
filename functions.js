@@ -268,7 +268,7 @@ function uceItem() {
       let itemObject = character.items[index];
       let s = correctScroll(itemObject);
       if (scrolls[s] && scrolls[s][0] && character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] - character.items[scrolls[s][0]].q) || 
+          (scrolls[s][1] - character.items[scrolls[s][0]].q) || !scrolls[s] &&
           character.gold >= parent.G.items[s].g) {
         if (!scrolls[s]) {
           scrolls[s] = [null, 1];
@@ -287,7 +287,7 @@ function uceItem() {
       let cs = correctCScroll(itemObject);
       if (scrolls[cs] && scrolls[cs][0] && character.gold >= 
             parent.G.items[cs].g *
-          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || 
+          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || !scrolls[s] &&
           character.gold >= parent.G.items[cs].g) {
         if (!scrolls[cs]) {
           scrolls[cs] = [null, 1];
