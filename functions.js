@@ -30,11 +30,11 @@ window.setCorrectingInterval = (function(func, delay) {
   } };
 });
 function showTransports(e) {
-  if (e.keyCode === 66) {
+  if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
-  } else if (e.keyCode === 86) {
+  } else if (e.keyCode === 114) {
     parent.render_transports_npc();
-  } else if (e.keyCode === 71) {
+  } else if (e.keyCode === 192) {
     parent.socket.emit('transport', {to: 'jail'});
   }
 }
