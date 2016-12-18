@@ -241,7 +241,7 @@ function uceItem() {
               equipped.level < item.level && 
               equipped.stat_type === item.stat_type) {
             parent.socket.emit('unequip', {slot: slot});
-            equip(i);
+            setTimeout(function () { equip(i); }, 500);
             break;
           }
         }
