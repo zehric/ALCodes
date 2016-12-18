@@ -1,3 +1,4 @@
+/* General Config */
 doAttack = character.ctype !== 'merchant';
 kite = character.range > 50 && true; // change to false to make kite false
 autoUCE = true; // auto upgrade/compound/exchange
@@ -35,5 +36,8 @@ tanks = ['bleevl'];
 // if not empty, only attacks priority monsters that are targeting listed tanks
 
 loopInterval = 100; // increase this if you are disconnecting
+
+/* Priest Config */
+healAt = 0.7;
 
 $.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
