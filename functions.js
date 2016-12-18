@@ -481,7 +481,7 @@ function curse(target) {
 }
 
 function invis() {
-  if (!character.invis && (!parent.next_skill.curse ||
+  if (!character.invis && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
     parent.socket.emit("ability", {
       name: "invis",
