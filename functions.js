@@ -250,13 +250,6 @@ function uceItem() {
     }
   }
 
-  // console.log(toUpgrades)
-  // console.log(toStats)
-  // console.log(toCompounds)
-  // console.log(scrolls)
-  // console.log(toExchanges) 
-  // console.log(emptySlots)
-
   for (let item in toUpgrades) { // buy items and add to scrolls
     let index = toUpgrades[item];
     if (typeof(index) !== 'number') {
@@ -346,12 +339,6 @@ function uceItem() {
       }
     }
   }
-  console.log(toUpgrades)
-  console.log(toStats)
-  console.log(toCompounds)
-  console.log(scrolls)
-  console.log(toExchanges) 
-  console.log(emptySlots)
   setTimeout(function () {
     for (let u in toUpgrades) {
       let item = character.items[toUpgrades[u]];
