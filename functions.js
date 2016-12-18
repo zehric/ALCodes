@@ -2,7 +2,9 @@
 window.setCorrectingInterval = (function(func, delay) {
   var instance = {};
 
+  var stopped = false;
   var tick = function (func, delay) {
+    if (stopped) return;
     if (!instance.started) {
       instance.func = func;
       instance.delay = delay;
@@ -23,11 +25,9 @@ window.setCorrectingInterval = (function(func, delay) {
   };
 
   tick(func, delay);
-  return {
-    clear: function() {
-      tick = null;
-    }
-  };
+  return { clear: function() {
+      stopped = true;
+  } };
 });
 function showTransports(e) {
   if (e.keyCode === 66) {
@@ -428,7 +428,7 @@ function attackPlayer(player) {
   if (character.ctype === 'rogue') {
     invis();
   }
-  if (parent.distance(character, player) > character.range) {
+  if (!in_attack_range(player)) {
     if (can_move_to(player)) {
       change_target(player);
       if (character.ctype === 'warrior') {
@@ -438,14 +438,14 @@ function attackPlayer(player) {
     } else {
       game_log('cannot move to player');
     }
-  } else if (can_attack(player) && !player.rip) {
+  } else if (!player.rip) {
     change_target(player);
     if (character.ctype === 'warrior') {
       charge();
     }
     if (!attackInterval) {
       attackInterval = setCorrectingInterval(attackLoop,
-                                             1 / character.frequency);
+        1000 / character.frequency);
     }
     if (character.range > player.range) {
       rangeMove(player);
@@ -458,8 +458,8 @@ function attackLoop () {
   if (t && t.type === 'character' || useAbilities) {
     useAbilityOn(t);
   }
-  if (t && !t.dead && !t.rip && can_attack(t)) {
-    attack(get_target());
+  if (t && !t.dead && !t.rip && in_attack_range(t)) {
+    attack(t);
   }
 }
 
@@ -565,12 +565,17 @@ setCorrectingInterval(function() { // move and attack code
     target = null;
     parent.ctarget = null;
   }
-  if ((!target || target.dead || target.rip || !can_attack(target)) && 
+  // if ((!target || target.dead || target.rip || !can_attack(target)) && 
+  //     attackInterval) {
+  //   attackInterval.clear();
+  //   attackInterval = null;
+  // }
+  target = searchTargets(maxMonsterHP, minMonsterXP, target);
+  if (!in_attack_range(target) && new Date() > parent.next_attack && 
       attackInterval) {
     attackInterval.clear();
     attackInterval = null;
   }
-  target = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (target && target.players) {
     doPVP(target);
     return;
@@ -592,7 +597,8 @@ setCorrectingInterval(function() { // move and attack code
   if (target && !attackInterval && !target.dead && !target.rip && 
       can_attack(target)) {
     set_message('Attacking ' + target.mtype);
-    attackInterval = setCorrectingInterval(attackLoop, 1 / character.frequency);
+    attackInterval = setCorrectingInterval(attackLoop, 
+      1000 / character.frequency + 30);
   }
   if (target && !target.dead && !target.rip) {
     rangeMove(target);
