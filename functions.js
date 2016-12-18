@@ -111,7 +111,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (tanks.includes(current.target) || solo)) {
       return current;
     }
-    if (can_move_to(current) && target.type !== 'character' &&
+    if (can_move_to(current) && (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         current.max_hp <= maxHP && current.xp >= minXP && 
