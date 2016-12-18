@@ -31,9 +31,11 @@ window.setCorrectingInterval = (function(func, delay) {
 });
 function showTransports(e) {
   if (e.keyCode === 66) {
-    parent.socket.emit('transport', {to: 'jail'});
+    parent.socket.emit('transport', {to: 'bank'});
   } else if (e.keyCode === 86) {
     parent.render_transports_npc();
+  } else if (e.keyCode === 71) {
+    parent.socket.emit('transport', {to: 'jail'});
   }
 }
 
@@ -269,8 +271,10 @@ function uceItem() {
   for (let item in toUpgrades) { // buy items and add to scrolls
     let index = toUpgrades[item];
     if (typeof(index) !== 'number') {
-      toUpgrades[item] = emptySlots.shift();
-      if (character.gold >= parent.G.items[item].g) {
+      if (character.gold >= parent.G.items[item].g && 
+          (scrolls['scroll0'] || 
+            character.gold >= parent.G.items[item].g + 1000)) {
+        toUpgrades[item] = emptySlots.shift();
         buy(item, 1);
         if (!scrolls['scroll0']) {
           scrolls['scroll0'] = [null, 1];
