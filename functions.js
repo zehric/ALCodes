@@ -342,7 +342,7 @@ function uceItem() {
     for (let index of toExchanges) {
       exchange(index);
     }
-  }, 200);
+  }, 500);
 }
 
 function playerStrength(player) {
