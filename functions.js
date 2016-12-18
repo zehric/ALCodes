@@ -378,7 +378,7 @@ function doPVP(targets) {
 
 var strongEnemy;
 function flee() {
-  if (character.ctype === 'rogue') {
+  if (character.ctype === 'rogue' && new Date() > parent.next_skill.invis) {
     invis();
     strongEnemy = new Date();
   } else {
@@ -425,9 +425,6 @@ function attackLoop () {
     useAbilityOn(t);
   }
   if (t && !t.dead && !t.rip && can_attack(t)) {
-    if (character.invis) {
-      lastSneak = new Date();
-    }
     attack(get_target());
   }
 }
@@ -444,9 +441,8 @@ function useAbilityOn(target) {
   }
 }
 
-var lastcurse;
 function curse(target) {
-  if ((!lastcurse || new Date() - lastcurse > 5000) && !target.cursed) {
+  if (new Date() > parent.next_skill.curse && !target.cursed) {
     lastcurse = new Date();
     parent.socket.emit("ability", {
       name: "curse",
@@ -455,18 +451,16 @@ function curse(target) {
   }
 }
 
-var lastSneak;
 function invis() {
-  if (!character.invis && (!lastSneak || new Date() - lastSneak > 12000)) {
+  if (!character.invis && new Date() > parent.next_skill.invis) {
     parent.socket.emit("ability", {
       name: "invis",
     });
   }
 }
 
-var lastburst;
 function burst(target) {
-  if (!lastburst || new Date() - lastburst > 10000) {
+  if (new Date() > parent.next_skill.burst) {
     lastburst = new Date();
     buy('mpot1', 1);
     parent.socket.emit("ability", {
@@ -476,9 +470,8 @@ function burst(target) {
   }
 }
 
-var lasttaunt;
 function taunt(target) {
-  if ((!lasttaunt || new Date() - lasttaunt > 6000) && !target.taunted) {
+  if (new Date() > parent.next_skill.taunt && !target.taunted) {
     lasttaunt = new Date();
     parent.socket.emit("ability", {
       name: "taunt",
@@ -487,9 +480,8 @@ function taunt(target) {
   }
 }
 
-var lastcharge;
 function charge() {
-  if (!lastcharge || new Date() - lastcharge > 40000) {
+  if (new Date() > parent.next_skill.charge) {
     lastcharge = new Date();
     parent.socket.emit("ability", {
       name: "charge",
@@ -497,9 +489,8 @@ function charge() {
   }
 }
 
-var lastsupershot;
 function supershot(target) {
-  if (!lastsupershot || new Date() - lastsupershot > 30000) {
+  if (new Date() > parent.next_skill.supershot) {
     lastsupershot = new Date();
     buy('mpot1', 1);
     parent.socket.emit("ability", {
