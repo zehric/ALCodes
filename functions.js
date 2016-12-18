@@ -2,7 +2,7 @@
 window.setCorrectingInterval = (function(func, delay) {
   var instance = {};
 
-  function tick(func, delay) {
+  var tick = function (func, delay) {
     if (!instance.started) {
       instance.func = func;
       instance.delay = delay;
@@ -58,7 +58,7 @@ function rangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
   var dist = Math.hypot(dX, dY) - character.range;
-  var theta = Math.atan2(dY, dX)
+  var theta = Math.atan2(dY, dX);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (!in_attack_range(target)) {
@@ -67,12 +67,11 @@ function rangeMove(target) {
     var farX = character.real_x + (dist - 60) * Math.cos(theta);
     var farY = character.real_y + (dist - 60) * Math.sin(theta);
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
-        (xBoundaries.length && (farX < xBoundaries[0] 
-          || farX > xBoundaries[1]) ||
-        (yBoundaries.length && (farY < yBoundaries[0] 
-          || farY > yBoundaries[1])))) && 
-        theta < 100) {
-      theta += .1;
+        (xBoundaries.length && (farX < xBoundaries[0] || 
+          farX > xBoundaries[1]) ||
+        (yBoundaries.length && (farY < yBoundaries[0] || 
+          farY > yBoundaries[1])))) && theta < 100) {
+      theta += 0.1;
       farX = character.real_x + (dist - 60) * Math.cos(theta);
       farY = character.real_y + (dist - 60) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
@@ -91,8 +90,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
   var target = null;
   var enemies = [];
   var allies = [];
-  for (id in parent.entities) {
-    var current = parent.entities[id];
+  for (let id in parent.entities) {
+    let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
         (can_move_to(current) || 
           parent.distance(character, current) <= current.range + 10)) {
@@ -110,7 +109,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         current.max_hp <= maxHP && current.xp >= minXP && 
-        ((target == null || 
+        ((target === null || 
             current.xp / current.max_hp > target.xp / target.max_hp) ||
         target.mtype === current.mtype &&
             parent.distance(character, current) <
@@ -126,6 +125,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
     if (currentTarget && !party.includes(currentTarget.name) &&
         (!currentTarget.target || currentTarget.target === character.name)) {
       return currentTarget;
+    }
   }
   return target;
 }
@@ -258,8 +258,8 @@ function uceItem() {
     } else {
       let itemObject = character.items[index];
       let s = correctScroll(itemObject);
-      if (scrolls[s] && scrolls[s][0] 
-          || character.gold >= parent.G.items[s].g) {
+      if (scrolls[s] && scrolls[s][0] || 
+          character.gold >= parent.G.items[s].g) {
         if (!scrolls[s]) {
           scrolls[s] = [null, 1];
         } else {
@@ -275,8 +275,8 @@ function uceItem() {
     if (indices.length === 3) {
       let itemObject = character.items[indices[0]];
       let cs = correctCScroll(itemObject);
-      if (scrolls[cs] && scrolls[cs][0] 
-          || character.gold >= parent.G.items[cs].g) {
+      if (scrolls[cs] && scrolls[cs][0] || 
+          character.gold >= parent.G.items[cs].g) {
         if (!scrolls[cs]) {
           scrolls[cs] = [null, 1];
         } else {
@@ -345,7 +345,7 @@ function uceItem() {
   }, 200);
 }
 
-function playerStength(player) {
+function playerStrength(player) {
   return (player.attack * player.frequency) + player.armor +
     player.resistance + player.hp + player.speed;
 }
@@ -393,11 +393,17 @@ function flee() {
 function attackPlayer(player) {
   if (parent.distance(character, player) > character.range) {
     if (can_move_to(player)) {
+      if (character.ctype === 'warrior') {
+        charge();
+      }
       rangeMove(player);
     } else {
       game_log('cannot move to player');
     }
   } else if (can_attack(player) && !player.rip) {
+    if (character.ctype === 'warrior') {
+      charge();
+    }
     if (!attackInterval) {
       attackInterval = setCorrectingInterval(attackLoop,
                                              1 / character.frequency);
