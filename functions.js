@@ -32,7 +32,7 @@ window.setCorrectingInterval = (function(func, delay) {
 function showTransports(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
-  } else if (e.keyCode === 114) {
+  } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
     parent.socket.emit('transport', {to: 'jail'});
