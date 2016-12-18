@@ -267,10 +267,9 @@ function uceItem() {
     } else {
       let itemObject = character.items[index];
       let s = correctScroll(itemObject);
-      if (scrolls[s] && scrolls[s][0] && 
-          character.items[scrolls[s][0]].q >= scrolls[s][1] || 
-          character.gold >= parent.G.items[s].g * 
-          (scrolls[s][1] - character.items[scrolls[s][0]].q)) {
+      if (scrolls[s] && scrolls[s][0] && character.gold >= parent.G.items[s].g *
+          (scrolls[s][1] - character.items[scrolls[s][0]].q) || 
+          character.gold >= parent.G.items[s].g) {
         if (!scrolls[s]) {
           scrolls[s] = [null, 1];
         } else {
@@ -286,10 +285,10 @@ function uceItem() {
     if (indices.length === 3) {
       let itemObject = character.items[indices[0]];
       let cs = correctCScroll(itemObject);
-      if (scrolls[cs] && scrolls[cs][0] && 
-          character.items[scrolls[cs][0]].q >= scrolls[cs][1] || 
-          character.gold >= parent.G.items[cs].g *
-          (scrolls[cs][1] - character.items[scrolls[cs][0]].q)) {
+      if (scrolls[cs] && scrolls[cs][0] && character.gold >= 
+            parent.G.items[cs].g *
+          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || 
+          character.gold >= parent.G.items[cs].g) {
         if (!scrolls[cs]) {
           scrolls[cs] = [null, 1];
         } else {
