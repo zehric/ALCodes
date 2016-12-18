@@ -54,12 +54,6 @@ for (let person of party) {
   }
 }
 
-// function tryAttack(target) {
-//   if (target && !target.dead && !target.rip && can_attack(target)) {
-//     attack(target);
-//   }
-// }
-
 function rangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
@@ -88,14 +82,26 @@ function rangeMove(target) {
   }
 }
 
-function getBestMonster(maxHP, minXP, currentTarget) {
-  if (currentTarget && (!currentTarget.target 
-      || currentTarget.target === character.name)) {
+function searchTargets(maxHP, minXP, currentTarget) {
+  if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
+      (!currentTarget.target || currentTarget.target === character.name) || 
+      (parent.pvp && currentTarget.type === 'character'))) {
     return currentTarget;
   }
   var target = null;
+  var enemies = [];
+  var allies = [];
   for (id in parent.entities) {
     var current = parent.entities[id];
+    if (parent.pvp && current.type === 'character' && !current.rip &&
+        (can_move_to(current) || 
+          parent.distance(character, current) <= current.range + 10)) {
+      if (party.includes(current.name)) {
+        allies.push(current);
+      } else {
+        enemies.push(current);
+      }
+    }
     if (priorityMonsters.includes(current.mtype) && 
         (tanks.includes(current.target) || solo)) {
       return current;
@@ -112,26 +118,23 @@ function getBestMonster(maxHP, minXP, currentTarget) {
       target = current;
     }
   }
-  return target;
-}
-
-function findPlayers() {
-  players = []
-  for (id in parent.entities) {
-    var current = parent.entities[id];
-    if (current.type === 'character' && !current.rip && 
-        !party.includes(current.name)) {
-      players.push(current);
-    }
+  if (enemies.length !== 0) {
+    allies.push(character);
+    return { players: true, allies: allies, enemies: enemies };
   }
-  return players;
+  if (parent.pvp) {
+    if (currentTarget && !party.includes(currentTarget.name) &&
+        (!currentTarget.target || currentTarget.target === character.name)) {
+      return currentTarget;
+  }
+  return target;
 }
 
 function potions() {
   if (new Date() > parent.next_potion) {
-    if (character.hp < 400) {
+    if (character.hp < buyHPPotAt) {
       buy('hpot0', 1);
-    } else if (character.mp < 100) {
+    } else if (character.mp < buyMPPotAt) {
       buy('mpot0', 1);
     }
     if (character.max_hp - character.hp > useHP) {
@@ -342,8 +345,155 @@ function uceItem() {
   }, 200);
 }
 
+function playerStength(player) {
+  return (player.attack * player.frequency) + player.armor +
+    player.resistance + player.hp + player.speed;
+}
 
-var attackInterval;
+function doPVP(targets) {
+  var allies = targets.allies;
+  var enemies = targets.enemies;
+  if (targets.enemies.length > targets.allies.length) {
+    flee();
+  } else {
+    var strongestEnemy = enemies[0];
+    var strongestAlly = allies[0];
+    for (let enemy of enemies) {
+      if (playerStrength(enemy) > playerStrength(strongestEnemy)) {
+        strongestEnemy = enemy;
+      }
+    }
+    for (let ally of allies) {
+      if (playerStrength(ally) > playerStrength(strongestAlly)) {
+          strongestAlly = ally;
+      }
+    }
+    if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
+      flee();
+    } else {
+      attackPlayer(strongestEnemy);
+    }
+  }
+}
+
+var strongEnemy;
+function flee() {
+  if (character.ctype === 'rogue') {
+    invis();
+    strongEnemy = new Date();
+  } else {
+    if (parent.current_map !== 'jail') {
+      parent.socket.emit('transport', {to: 'jail'});
+    } else {
+      parent.socket.emit('leave');
+    }
+  }
+}
+
+function attackPlayer(player) {
+  if (parent.distance(character, player) > character.range) {
+    if (can_move_to(player)) {
+      rangeMove(player);
+    } else {
+      game_log('cannot move to player');
+    }
+  } else if (can_attack(player) && !player.rip) {
+    if (!attackInterval) {
+      attackInterval = setCorrectingInterval(attackLoop,
+                                             1 / character.frequency);
+    }
+    if (character.range > player.range) {
+      rangeMove(player);
+    }
+  }
+}
+
+function attackLoop () {
+  var t = get_target();
+  if (t.type === 'character') {
+    useAbilityOn(t);
+  }
+  if (t && !t.dead && !t.rip && can_attack(t)) {
+    attack(get_target());
+  }
+}
+
+function useAbilityOn(target) {
+  if (character.ctype === 'rogue' || character.ctype === 'warrior') {
+    return;
+  } else if (character.ctype === 'ranger') {
+    supershot(target);
+  } else if (character.ctype === 'priest') {
+    curse(target);
+  } else if (character.ctype === 'mage') {
+    burst(target);
+  }
+}
+
+var lastcurse;
+function curse(target) {
+  if ((!lastcurse || new Date() - lastcurse > 5000) && !target.cursed) {
+    lastcurse = new Date();
+    parent.socket.emit("ability", {
+      name: "curse",
+      id: target.id
+    });
+  }
+}
+
+var lastSneak;
+function invis() {
+  if (!character.invis && (!lastSneak || new Date() - lastSneak > 12000)) {
+    parent.socket.emit("ability", {
+      name: "invis",
+    });
+  }
+}
+
+var lastburst;
+function burst(target) {
+  if (!lastburst || new Date() - lastburst > 10000) {
+    lastburst = new Date();
+    buy('mpot1', 1);
+    parent.socket.emit("ability", {
+      name: "burst",
+      id: target.id
+    });
+  }
+}
+
+var lasttaunt;
+function taunt(target) {
+  if ((!lasttaunt || new Date() - lasttaunt > 6000) && !target.taunted) {
+    lasttaunt = new Date();
+    parent.socket.emit("ability", {
+      name: "taunt",
+      id: target.id
+    });
+  }
+}
+
+var lastcharge;
+function charge() {
+  if (!lastcharge || new Date() - lastcharge > 40000) {
+    lastcharge = new Date();
+    parent.socket.emit("ability", {
+      name: "charge",
+    });
+  }
+}
+
+var lastsupershot;
+function supershot(target) {
+  if (!lastsupershot || new Date() - lastsupershot > 30000) {
+    lastsupershot = new Date();
+    buy('mpot1', 1);
+    parent.socket.emit("ability", {
+      name: "supershot",
+      id: target.id
+    });
+  }
+}
 
 setCorrectingInterval(function() { // enchant code
   if (autoUCE) {
@@ -351,6 +501,7 @@ setCorrectingInterval(function() { // enchant code
   }
 }, 1000);
 
+var attackInterval;
 setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
@@ -358,26 +509,31 @@ setCorrectingInterval(function() { // move and attack code
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
-    if (attackInterval) {
-      attackInterval.clear();
-      attackInterval = null;
-    }
+    parent.ctarget = null;
   }
-  target = getBestMonster(maxMonsterHP, minMonsterXP, target);
+  if ((!target || target.dead || target.rip) && attackInterval) {
+    attackInterval.clear();
+    attackInterval = null;
+  }
+  target = searchTargets(maxMonsterHP, minMonsterXP, target);
+  if (target.players) {
+    doPVP(target);
+    return;
+  }
+  if (target.type === 'character') {
+    attackPlayer(target);
+    return;
+  }
   if (!target || !can_move_to(target) || target.dead) {
     set_message('No monsters');
     return;
   } else {
     change_target(target);
   }
-  if (target && !attackInterval) {
+  if (target && !attackInterval && !target.dead && !target.rip && 
+      can_attack(target)) {
     set_message('Attacking ' + target.mtype);
-    attackInterval = setCorrectingInterval(function () {
-      var t = get_target();
-      if (!t.dead && !t.rip && can_attack(t)) {
-        attack(get_target());
-      }
-    }, 1 / character.frequency);
+    attackInterval = setCorrectingInterval(attackLoop, 1 / character.frequency);
   }
   if (target && !target.dead && !target.rip) {
     rangeMove(target);
