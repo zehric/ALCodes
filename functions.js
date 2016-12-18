@@ -422,7 +422,7 @@ function attackPlayer(player) {
 
 function attackLoop () {
   var t = get_target();
-  if (t.type === 'character') {
+  if (t && t.type === 'character') {
     useAbilityOn(t);
   }
   if (t && !t.dead && !t.rip && can_attack(t)) {
