@@ -51,6 +51,7 @@ var solo = solo || false;
 var tanks = tanks || [];
 var loopInterval = loopInterval || 100;
 var healAt = healAt || 0.7;
+var rangeAdjust = (character.range >= 40) ? 25 : 0;
 
 function showTransports(e) {
   if (e.keyCode === 113) {
@@ -95,7 +96,7 @@ for (let person of party) {
 function rangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
-  var dist = Math.hypot(dX, dY) - character.range - 20;
+  var dist = Math.hypot(dX, dY) - character.range - rangeAdjust;
   var theta = Math.atan2(dY, dX);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
