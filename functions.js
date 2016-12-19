@@ -488,7 +488,7 @@ function attackPlayer(player) {
     }
     if (!attackInterval) {
       attackInterval = setCorrectingInterval(attackLoop,
-        1000 / character.frequency);
+        1000 / character.frequency + 30);
     }
     if (character.range > player.range) {
       rangeMove(player);
@@ -527,6 +527,9 @@ function healPlayer(target) {
   change_target(target);
   if (!in_attack_range(target) && can_move_to(target)) {
     rangeMove(target);
+  } else if (can_heal(target)) {
+    attackInterval = setCorrectingInterval(attackLoop, 
+      1000 / character.frequency + 30);
   }
 }
 
