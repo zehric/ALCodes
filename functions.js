@@ -106,7 +106,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
         (!currentTarget.target || currentTarget.target === character.name) || 
         (parent.pvp && currentTarget.type === 'character')) && 
-      character.ctype === 'priest') {
+      character.ctype === 'priest' && in_attack_range(currentTarget)) {
     return currentTarget;
   }
   var target = null;
