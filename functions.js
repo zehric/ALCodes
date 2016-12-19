@@ -396,7 +396,7 @@ function uceItem() {
 
 function playerStrength(player) {
   return (player.attack * player.frequency) + player.armor +
-    player.resistance + player.hp + player.speed + player.range;
+    player.resistance + player.max_hp + player.speed + player.range;
 }
 
 function doPVP(targets) {
