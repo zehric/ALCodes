@@ -159,14 +159,15 @@ function searchTargets(maxHP, minXP, currentTarget) {
 
 function potions() {
   if (new Date() > parent.next_potion) {
-    if (character.hp < buyHPPotAt) {
-      buy('hpot1', 1);
-    } else if (character.mp < buyMPPotAt) {
-      buy('mpot0', 1);
-    }
     if (character.max_hp - character.hp > useHP) {
+      if (character.hp < buyHPPotAt) {
+        buy('hpot1', 1);
+      }
       parent.use('hp');
     } else if (character.max_mp - character.mp > useMP) {
+      if (character.mp < buyMPPotAt) {
+        buy('mpot0', 1);
+      }
       parent.use('mp');
     }
   }
