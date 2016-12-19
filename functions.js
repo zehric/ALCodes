@@ -30,25 +30,6 @@ window.setCorrectingInterval = (function(func, delay) {
   } };
 });
 
-var wallKiteRange = wallKiteRange || 100;
-var autoUCE = autoUCE && true;
-var upgradeTo = upgradeTo || 1;
-var upgradeItems = upgradeItems || [];
-var xBoundaries = xBoundaries || [];
-var yBoundaries = yBoundaries || [];
-var party = party || ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 
-                      'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 
-                      'AidElk', 'nopo', 'bleeeeevl'];
-var useHP = useHP || 200;
-var useMP = useMP || 300;
-var buyHPPotAt = buyHPPotAt || character.max_hp / 2;
-var buyMPPotAt = buyMPPotAt || 100;
-var useAbilities = useAbilities || false;
-var priorityMonsters = priorityMonsters || [];
-var solo = solo || false;
-var tanks = tanks || [];
-var loopInterval = loopInterval || 200;
-var healAt = healAt || 0.7;
 var rangeAdjust = (character.range >= 40) ? 25 : 0;
 
 function showTransports(e) {
@@ -204,11 +185,17 @@ function potions() {
     return;
   }
   var t = get_target();
+  var survive = willSurvive(t);
+  if (!survive && parent.distance(t, character) <= (t.range || 
+      parent.G.monsters[t.mtype].range)) {
+    set_message('Fled from ' + t.mtype || t.name);
+    flee();
+  }
   if (character.mp < character.mp_cost && !hasMPPot1) {
     hasMPPot1 = true;
     buy('mpot1', 1);
   }
-  if (t && !t.dead && !t.rip && !willSurvive(t) && !hasHPPot1) {
+  if (!survive && !hasHPPot1) {
     hasHPPot1 = true;
     buy('hpot1', 1);
   }
@@ -217,7 +204,7 @@ function potions() {
     buy('mpot0', 1);
   }
   if (character.hp < buyHPPotAt && !hasHPPot0 && !hasHPPot1) {
-    hasHPPot1 = true;
+    hasHPPot0 = true;
     buy('hpot0', 1);
   }
   if (new Date() > parent.next_potion) {
@@ -233,28 +220,19 @@ function potions() {
   }
 }
 
-function panic() {
-  var t = get_target();
-  if (!willSurvive(t) && 
-      parent.distance(t, character) < t.range) {
-    set_message('Fled from ' + t.mtype || t.name);
-    flee();
-  }
-}
-
 function willSurvive(target) {
   return !target || party.includes(target.name) || target.dead || target.rip ||
     target.npc || (target.type === 'monster' && 
       (target.target !== character.name ||
         (parent.G.monsters[target.mtype].damage_type === 'physical' &&
           character.hp > target.attack * (1 - character.armor / 1000)) ||
-      (parent.G.monsters[target.mtype].damage_type === 'magical' &&
-        character.hp > target.attack * (1 - character.resistance / 1000)))) ||
-    (target.type === 'character' && (target.target !== character.id ||
-      (parent.G.classes[target.ctype].damage_type === 'physical' &&
-        character.hp > target.attack * (1 - character.armor / 1000)) ||
-      (parent.G.classes[target.ctype].damage_type === 'magical' &&
-        character.hp > target.attack * (1 - character.resistance / 1000))));
+        (parent.G.monsters[target.mtype].damage_type === 'magical' &&
+          character.hp > target.attack * (1 - character.resistance / 1000)))) ||
+      (target.type === 'character' && (target.target !== character.id ||
+        (parent.G.classes[target.ctype].damage_type === 'physical' &&
+          character.hp > target.attack * (1 - character.armor / 1000)) ||
+        (parent.G.classes[target.ctype].damage_type === 'magical' &&
+          character.hp > target.attack * (1 - character.resistance / 1000))));
 }
 
 var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade', 
@@ -668,7 +646,6 @@ var attackInterval;
 setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
-  panic();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
