@@ -170,15 +170,15 @@ function searchTargets(maxHP, minXP, currentTarget) {
       target = current;
     }
   }
+  if (character.ctype === 'priest' && 
+    (!target && character.hp / character.max_hp < healAt || target && 
+      target.type === 'character' &&
+      character.hp / character.max_hp < target.hp / target.max_hp)) {
+    return character;
+  }
   if (enemies.length !== 0) {
     allies.push(character);
     return { players: true, allies: allies, enemies: enemies };
-  }
-  if (character.ctype === 'priest' && 
-      (!target && character.hp / character.max_hp < healAt || target && 
-        target.type === 'player' &&
-          character.hp / character.max_hp < target.hp / target.max_hp)) {
-    return character;
   }
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
@@ -517,6 +517,7 @@ function useAbilityOn(target) {
 }
 
 function healPlayer(target) {
+  set_message('Healing ' + target.name);
   if (can_heal(target)) {
     heal(target);
   } else if (can_move_to(target)) {
