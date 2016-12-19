@@ -126,7 +126,7 @@ function rangeMove(target) {
 
 function searchTargets(maxHP, minXP, currentTarget) {
   if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
-        (!currentTarget.target || currentTarget.target === character.name) || 
+        (!currentTarget.target || party.includes(currentTarget.target)) || 
         (parent.pvp && currentTarget.type === 'character')) && 
       character.ctype !== 'priest' && 
       parent.distance(currentTarget, character) <= character.range + 100) {
@@ -171,7 +171,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
     }
   }
   if (character.ctype === 'priest' && 
-    (!target && character.hp / character.max_hp < healAt || target && 
+      ((!target || target.type === 'monster') && 
+        character.hp / character.max_hp < healAt || target && 
       target.type === 'character' &&
       character.hp / character.max_hp < target.hp / target.max_hp)) {
     return character;
@@ -183,7 +184,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
         (!target || !party.includes(target.name)) &&
-        (!currentTarget.target || currentTarget.target === character.name)) {
+        (!currentTarget.target || party.includes(currentTarget.target))) {
+      console.log(target);
       return currentTarget;
     }
   }
