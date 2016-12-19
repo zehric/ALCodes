@@ -402,6 +402,7 @@ function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
   if (targets.enemies.length > targets.allies.length) {
+    set_message('Too many enemies');
     flee();
   } else {
     var strongestEnemy = enemies[0];
@@ -417,6 +418,7 @@ function doPVP(targets) {
       }
     }
     if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
+      set_message('Fled from ' + strongestEnemy.name);
       flee();
     } else {
       attackPlayer(strongestEnemy);
