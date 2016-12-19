@@ -36,7 +36,7 @@ solo = false; // try to solo the priority monster
 tanks = ['bleevl'];
 // if not empty, only attacks priority monsters that are targeting those listed
 
-loopInterval = 100; // increase this if you are disconnecting
+loopInterval = 200; // increase this if you are disconnecting
 
 /* Priest Config */
 healAt = 0.7;
