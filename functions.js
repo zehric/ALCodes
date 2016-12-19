@@ -72,7 +72,7 @@ for (let person of party) {
 function rangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
-  var dist = Math.hypot(dX, dY) - character.range;
+  var dist = Math.hypot(dX, dY) - character.range - 20;
   var theta = Math.atan2(dY, dX);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
