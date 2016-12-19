@@ -186,7 +186,6 @@ function searchTargets(maxHP, minXP, currentTarget) {
     if (currentTarget && !party.includes(currentTarget.name) &&
         (!target || !party.includes(target.name)) &&
         (!currentTarget.target || party.includes(currentTarget.target))) {
-      console.log(target);
       return currentTarget;
     }
   }
@@ -498,10 +497,13 @@ function attackPlayer(player) {
 
 function attackLoop () {
   var t = get_target();
-  if (t && t.type === 'character' || useAbilities) {
+  if (t && t.type === 'character' && !party.includes(t.name) || useAbilities) {
     useAbilityOn(t);
   }
-  if (t && !t.dead && !t.rip && in_attack_range(t)) {
+  if (t && party.includes(t.name) && character.ctype === 'priest') {
+    set_message('Healing ' + t.name);
+    heal(t);
+  } else if (t && !t.dead && !t.rip && in_attack_range(t)) {
     attack(t);
   }
 }
@@ -521,6 +523,7 @@ function useAbilityOn(target) {
 
 function healPlayer(target) {
   set_message('Healing ' + target.name);
+  change_target(target);
   if (can_heal(target)) {
     heal(target);
   } else if (can_move_to(target)) {
