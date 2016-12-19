@@ -619,7 +619,7 @@ setCorrectingInterval(function() { // move and attack code
   }
   if (in_attack_range(target) && pocket && get_player(pocket)) {
     var p = get_player(pocket);
-    move(pocket.real_x, pocket.real_y);
+    move(p.real_x, p.real_y);
   }
   if (target && target.players) {
     doPVP(target);
