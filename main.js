@@ -1,6 +1,9 @@
 /* General Config */
 doAttack = character.ctype !== 'merchant';
 kite = character.range > 50 && true; // false to manually override no kiting
+
+wallKiteRange = 100; // stay this distance away from walls when kiting
+
 autoUCE = true; // auto upgrade/compound/exchange
 upgradeTo = 7;
 upgradeItems = []; // if empty, will upgrade everything you are wearing

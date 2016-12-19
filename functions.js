@@ -29,6 +29,29 @@ window.setCorrectingInterval = (function(func, delay) {
       stopped = true;
   } };
 });
+
+var doAttack = doAttack || character.ctype !== 'merchant';
+var kite = kite || character.range > 50;
+var wallKiteRange = wallKiteRange || 100;
+var autoUCE = autoUCE && true;
+var upgradeTo = upgradeTo || 1;
+var upgradeItems = upgradeItems || [];
+var xBoundaries = xBoundaries || [];
+var yBoundaries = yBoundaries || [];
+var party = party || ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 
+                      'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 
+                      'AidElk', 'nopo', 'bleeeeevl'];
+var useHP = useHP || 200;
+var useMP = useMP || 300;
+var buyHPPotAt = buyHPPotAt || character.max_hp / 2;
+var buyMPPotAt = buyMPPotAt || 100;
+var useAbilities = useAbilities || false;
+var priorityMonsters = priorityMonsters || [];
+var solo = solo || false;
+var tanks = tanks || [];
+var loopInterval = loopInterval || 100;
+var healAt = healAt || 0.7;
+
 function showTransports(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
@@ -79,8 +102,8 @@ function rangeMove(target) {
   if (!in_attack_range(target)) {
     move(newX, newY);
   } else if (kite) {
-    var farX = character.real_x + (dist - 60) * Math.cos(theta);
-    var farY = character.real_y + (dist - 60) * Math.sin(theta);
+    var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
+    var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
         (xBoundaries.length && (farX < xBoundaries[0] || 
@@ -92,8 +115,8 @@ function rangeMove(target) {
       } else {
         theta -= .3 * counter;
       }
-      farX = character.real_x + (dist - 60) * Math.cos(theta);
-      farY = character.real_y + (dist - 60) * Math.sin(theta);
+      farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
+      farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
       newY = character.real_y + dist * Math.sin(theta);
       counter++;
