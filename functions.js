@@ -147,7 +147,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
       }
     }
     if (character.ctype === 'priest' && current.type === 'character' &&
-        party.includes(current.name) && current.hp / current.max_hp < healAt &&
+        party.includes(current.name) && !current.rip &&
+        current.hp / current.max_hp < healAt &&
         (!target || target.type !== 'character' || 
           current.hp / current.max_hp < target.hp / target.max_hp)) {
       target = current;
