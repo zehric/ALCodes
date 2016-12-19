@@ -412,10 +412,10 @@ function doPVP(targets) {
 
 var strongEnemy;
 function flee() {
+  strongEnemy = new Date();
   if (character.invis) return;
-  if (character.ctype === 'rogue' && new Date() > parent.next_skill.invis) {
+  if (character.ctype === 'rogue') {
     invis();
-    strongEnemy = new Date();
   } else {
     if (parent.current_map !== 'jail') {
       parent.socket.emit('transport', {to: 'jail'});
