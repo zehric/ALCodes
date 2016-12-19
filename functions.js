@@ -109,7 +109,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
         !current.npc && (can_move_to(current) || 
-          parent.distance(character, current) <= current.range + 10)) {
+          parent.distance(character, current) <= current.range + 50)) {
       if (party.includes(current.name)) {
         allies.push(current);
       } else {
@@ -121,8 +121,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (!target || target.type !== 'character' || 
           current.hp / current.max_hp < target.hp / target.max_hp)) {
       target = current;
-    }
-    if (priorityMonsters.includes(current.mtype)) {
+    } else if (priorityMonsters.includes(current.mtype)) {
       if (tanks.includes(current.target) || solo) {
         return current;
       } else {
@@ -150,6 +149,10 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (!currentTarget.target || currentTarget.target === character.name)) {
       return currentTarget;
     }
+  }
+  if (character.ctype === 'priest' && target.type === 'player' &&
+      character.hp / character.max_hp < target.hp / target.max_hp) {
+    return character;
   }
   return target;
 }
