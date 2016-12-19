@@ -232,9 +232,9 @@ function potions() {
 
 function panic() {
   var t = get_target();
-  if (!willSurvive(target) && 
-      parent.distance(target, character) < target.range) {
-    set_message('Fled from ' + target.mtype || target.name);
+  if (!willSurvive(t) && 
+      parent.distance(t, character) < t.range) {
+    set_message('Fled from ' + t.mtype || t.name);
     parent.socket.emit('transport', {to: 'test'});
   }
 }
