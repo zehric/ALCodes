@@ -47,7 +47,7 @@ var useAbilities = useAbilities || false;
 var priorityMonsters = priorityMonsters || [];
 var solo = solo || false;
 var tanks = tanks || [];
-var loopInterval = loopInterval || 100;
+var loopInterval = loopInterval || 200;
 var healAt = healAt || 0.7;
 var rangeAdjust = (character.range >= 40) ? 25 : 0;
 
