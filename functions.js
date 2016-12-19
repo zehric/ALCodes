@@ -159,7 +159,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
   }
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
-        (!target || !party.includes(target.name)) &&
+        (!target || target.type === 'monster' && 
+          !party.includes(target.name)) &&
         (!currentTarget.target || currentTarget.target === character.name)) {
       return currentTarget;
     }
@@ -582,11 +583,6 @@ setCorrectingInterval(function() { // move and attack code
     target = null;
     parent.ctarget = null;
   }
-  // if ((!target || target.dead || target.rip || !can_attack(target)) && 
-  //     attackInterval) {
-  //   attackInterval.clear();
-  //   attackInterval = null;
-  // }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (!in_attack_range(target) && new Date() > parent.next_attack && 
       attackInterval) {
