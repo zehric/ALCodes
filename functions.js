@@ -200,6 +200,9 @@ var hasMPPot0 = false;
 var hasHPPot1 = false;
 var hasMPPot1 = false;
 function potions() {
+  if (character.rip) {
+    return;
+  }
   var t = get_target();
   if (character.mp < character.mp_cost && !hasMPPot1) {
     hasMPPot1 = true;
