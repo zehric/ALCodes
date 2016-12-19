@@ -1,0 +1,7 @@
+Boars:
+xBoundaries = [-200, 250]; 
+yBoundaries = [-1500, -643];
+
+Wolves:
+xBoundaries = [];
+yBoundaries = [-2990, -2480];
