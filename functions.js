@@ -235,7 +235,7 @@ function panic() {
   if (!willSurvive(t) && 
       parent.distance(t, character) < t.range) {
     set_message('Fled from ' + t.mtype || t.name);
-    parent.socket.emit('transport', {to: 'test'});
+    flee();
   }
 }
 
@@ -498,8 +498,7 @@ function doPVP(targets) {
 var strongEnemy;
 function flee() {
   strongEnemy = new Date();
-  if (character.invis) return;
-  if (character.ctype === 'rogue') {
+  if (!character.invis && character.ctype === 'rogue') {
     invis();
   } else {
     parent.socket.emit('transport', {to: 'test'});
