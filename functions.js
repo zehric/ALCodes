@@ -81,16 +81,22 @@ function rangeMove(target) {
   } else if (kite) {
     var farX = character.real_x + (dist - 60) * Math.cos(theta);
     var farY = character.real_y + (dist - 60) * Math.sin(theta);
+    var counter = 1;
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta < 15) {
-      theta += .3;
+          farY > yBoundaries[1])))) && theta < 15 && theta > -15) {
+      if (counter % 2 === 1) {
+        theta += .3 * counter;
+      } else {
+        theta -= .3 * counter;
+      }
       farX = character.real_x + (dist - 60) * Math.cos(theta);
       farY = character.real_y + (dist - 60) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
       newY = character.real_y + dist * Math.sin(theta);
+      counter++;
     }
     move(newX, newY);
   }
