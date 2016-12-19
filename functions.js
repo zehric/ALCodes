@@ -525,9 +525,7 @@ function useAbilityOn(target) {
 function healPlayer(target) {
   set_message('Healing ' + target.name);
   change_target(target);
-  if (can_heal(target)) {
-    heal(target);
-  } else if (can_move_to(target)) {
+  if (!in_attack_range(target) && can_move_to(target)) {
     rangeMove(target);
   }
 }
@@ -618,6 +616,10 @@ setCorrectingInterval(function() { // move and attack code
       attackInterval) {
     attackInterval.clear();
     attackInterval = null;
+  }
+  if (in_attack_range(target) && pocket && get_player(pocket)) {
+    var p = get_player(pocket);
+    move(pocket.real_x, pocket.real_y);
   }
   if (target && target.players) {
     doPVP(target);

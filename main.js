@@ -40,5 +40,6 @@ loopInterval = 100; // increase this if you are disconnecting
 
 /* Priest Config */
 healAt = 0.7;
+pocket = ''; // who to follow when healing
 
 $.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
