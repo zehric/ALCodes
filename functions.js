@@ -57,7 +57,7 @@ function showTransports(e) {
   } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
-    parent.socket.emit('transport', {to: 'jail'});
+    parent.socket.emit('transport', {to: 'test'});
   }
 }
 
@@ -205,7 +205,7 @@ function potions() {
     hasMPPot1 = true;
     buy('mpot1', 1);
   }
-  if (t && !t.dead && !t.rip && character.hp < t.attack && !hasHPPot1) {
+  if (t && !t.dead && !t.rip && !willSurvive(t) && !hasHPPot1) {
     hasHPPot1 = true;
     buy('hpot1', 1);
   }
@@ -230,11 +230,33 @@ function potions() {
   }
 }
 
+function panic() {
+  var t = get_target();
+  if (!willSurvive(target) && 
+      parent.distance(target, character) < target.range) {
+    set_message('Fled from ' + target.mtype || target.name);
+    parent.socket.emit('transport', {to: 'test'});
+  }
+}
+
+function willSurvive(target) {
+  return !target || party.includes(target.name) || target.dead || target.rip ||
+    target.npc || (target.type === 'monster' && 
+      (target.target !== character.name ||
+        (parent.G.monsters[target.mtype].damage_type === 'physical' &&
+          character.hp > target.attack * (1 - character.armor / 1000)) ||
+      (parent.G.monsters[target.mtype].damage_type === 'magical' &&
+        character.hp > target.attack * (1 - character.resistance / 1000)))) ||
+    (target.type === 'character' && (target.target !== character.id ||
+      (parent.G.classes[target.ctype].damage_type === 'physical' &&
+        character.hp > target.attack * (1 - character.armor / 1000)) ||
+      (parent.G.classes[target.ctype].damage_type === 'magical' &&
+        character.hp > target.attack * (1 - character.resistance / 1000))));
+}
+
 var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade', 
                'claw', 'staff'];
-var primaryStats = { warrior: 'str', ranger: 'dex', rogue: 'dex', mage: 'int',
-                     priest: 'int' };
-var statScroll = primaryStats[character.ctype] + 'scroll';
+var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
 function uceItem() {
   function correctScroll(item) {
     let grades = parent.G.items[item.name].grades;
@@ -480,11 +502,7 @@ function flee() {
   if (character.ctype === 'rogue') {
     invis();
   } else {
-    if (parent.current_map !== 'jail') {
-      parent.socket.emit('transport', {to: 'jail'});
-    } else {
-      parent.socket.emit('leave');
-    }
+    parent.socket.emit('transport', {to: 'test'});
   }
 }
 
@@ -648,6 +666,7 @@ var attackInterval;
 setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
+  panic();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
