@@ -104,8 +104,9 @@ function rangeMove(target) {
 
 function searchTargets(maxHP, minXP, currentTarget) {
   if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
-      (!currentTarget.target || currentTarget.target === character.name) || 
-      (parent.pvp && currentTarget.type === 'character'))) {
+        (!currentTarget.target || currentTarget.target === character.name) || 
+        (parent.pvp && currentTarget.type === 'character')) && 
+      !character.ctype === 'priest') {
     return currentTarget;
   }
   var target = null;
@@ -150,17 +151,18 @@ function searchTargets(maxHP, minXP, currentTarget) {
     allies.push(character);
     return { players: true, allies: allies, enemies: enemies };
   }
-  if (parent.pvp) {
-    if (currentTarget && !party.includes(currentTarget.name) &&
-        (!currentTarget.target || currentTarget.target === character.name)) {
-      return currentTarget;
-    }
-  }
   if (character.ctype === 'priest' && 
       (!target && character.hp / character.max_hp < healAt || target && 
         target.type === 'player' &&
           character.hp / character.max_hp < target.hp / target.max_hp)) {
     return character;
+  }
+  if (parent.pvp || character.ctype === 'priest') {
+    if (currentTarget && !party.includes(currentTarget.name) &&
+        !party.includes(target.name) &&
+        (!currentTarget.target || currentTarget.target === character.name)) {
+      return currentTarget;
+    }
   }
   return target;
 }
