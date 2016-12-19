@@ -106,7 +106,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
   if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
         (!currentTarget.target || currentTarget.target === character.name) || 
         (parent.pvp && currentTarget.type === 'character')) && 
-      character.ctype !== 'priest' && in_attack_range(currentTarget)) {
+      character.ctype !== 'priest' && 
+      parent.distance(currentTarget, character) <= character.range + 50) {
     return currentTarget;
   }
   var target = null;
@@ -395,7 +396,7 @@ function uceItem() {
 
 function playerStrength(player) {
   return (player.attack * player.frequency) + player.armor +
-    player.resistance + player.hp + player.speed;
+    player.resistance + player.hp + player.speed + player.range;
 }
 
 function doPVP(targets) {
