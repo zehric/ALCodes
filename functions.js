@@ -198,6 +198,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
 function potions() {
   if (new Date() > parent.next_potion) {
     if (character.mp < character.mp_cost) {
+      buy('mpot1', 1);
       parent.use('mp');
     } else if (character.max_hp - character.hp > useHP) {
       if (character.hp < buyHPPotAt) {
