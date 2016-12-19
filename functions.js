@@ -65,7 +65,7 @@ parent.window.addEventListener('keydown', showTransports);
 
 on_destroy = function () {
   parent.window.removeEventListener('keydown', showTransports);
-}
+};
 
 on_party_invite = function (name) {
   if (party.includes(name)) {
@@ -110,9 +110,9 @@ function rangeMove(target) {
         (yBoundaries.length && (farY < yBoundaries[0] || 
           farY > yBoundaries[1])))) && theta < 15 && theta > -15) {
       if (counter % 2 === 1) {
-        theta += .3 * counter;
+        theta += 0.3 * counter;
       } else {
-        theta -= .3 * counter;
+        theta -= 0.3 * counter;
       }
       farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
       farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
@@ -473,6 +473,7 @@ function flee() {
 }
 
 function attackPlayer(player) {
+  set_message('Attacking ' + player.name);
   if (character.ctype === 'rogue') {
     invis();
   }
@@ -501,13 +502,30 @@ function attackPlayer(player) {
   }
 }
 
+function attackMonster(target) {
+  if (!target || (!can_move_to(target) && !in_attack_range(target) || 
+      target.dead)) {
+    set_message('No monsters');
+  } else {
+    set_message('Attacking ' + target.mtype);
+    change_target(target);
+    if (target && !attackInterval && !target.dead && !target.rip && 
+        can_attack(target)) {
+      attackInterval = setCorrectingInterval(attackLoop, 
+        1000 / character.frequency + 30);
+    }
+    if (target && !target.dead && !target.rip) {
+      rangeMove(target);
+    }
+  }
+}
+
 function attackLoop () {
   var t = get_target();
   if (t && t.type === 'character' && !party.includes(t.name) || useAbilities) {
     useAbilityOn(t);
   }
   if (t && party.includes(t.name) && character.ctype === 'priest') {
-    set_message('Healing ' + t.name);
     heal(t);
   } else if (t && !t.dead && !t.rip && in_attack_range(t)) {
     attack(t);
@@ -515,9 +533,12 @@ function attackLoop () {
 }
 
 function useAbilityOn(target) {
-  if (!target || target.dead || target.rip) return;
-  if (character.ctype === 'rogue' || character.ctype === 'warrior') {
+  if (character.ctype === 'rogue') {
+    invis();
+  } else if (!target || target.dead || target.rip) {
     return;
+  } else if (character.ctype === 'warrior') {
+    taunt(target);
   } else if (character.ctype === 'ranger') {
     supershot(target);
   } else if (character.ctype === 'priest') {
@@ -631,29 +652,11 @@ setCorrectingInterval(function() { // move and attack code
   }
   if (target && target.players) {
     doPVP(target);
-    return;
-  }
-  if (target && target.type === 'character' && party.includes(target.name)) {
+  } else if (target && target.type === 'character' && party.includes(target.name)) {
     healPlayer(target);
-    return;
-  }
-  if (target && target.type === 'character') {
+  } else if (target && target.type === 'character') {
     attackPlayer(target);
-    return;
-  }
-  if (!target || !can_move_to(target) || target.dead) {
-    set_message('No monsters');
-    return;
   } else {
-    change_target(target);
-  }
-  if (target && !attackInterval && !target.dead && !target.rip && 
-      can_attack(target)) {
-    set_message('Attacking ' + target.mtype);
-    attackInterval = setCorrectingInterval(attackLoop, 
-      1000 / character.frequency + 30);
-  }
-  if (target && !target.dead && !target.rip) {
-    rangeMove(target);
+    attackMonster(target);
   }
 }, loopInterval);
