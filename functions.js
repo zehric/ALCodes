@@ -85,8 +85,8 @@ function rangeMove(target) {
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta < 100) {
-      theta += 0.1;
+          farY > yBoundaries[1])))) && theta < 15) {
+      theta += .3;
       farX = character.real_x + (dist - 60) * Math.cos(theta);
       farY = character.real_y + (dist - 60) * Math.sin(theta);
       newX = character.real_x + dist * Math.cos(theta);
