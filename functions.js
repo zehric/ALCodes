@@ -156,8 +156,10 @@ function searchTargets(maxHP, minXP, currentTarget) {
       return currentTarget;
     }
   }
-  if (character.ctype === 'priest' && target.type === 'player' &&
-      character.hp / character.max_hp < target.hp / target.max_hp) {
+  if (character.ctype === 'priest' && 
+      (!target && character.hp / character.max_hp < healAt || target && 
+        target.type === 'player' &&
+          character.hp / character.max_hp < target.hp / target.max_hp)) {
     return character;
   }
   return target;
