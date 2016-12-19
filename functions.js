@@ -30,8 +30,6 @@ window.setCorrectingInterval = (function(func, delay) {
   } };
 });
 
-var doAttack = doAttack || character.ctype !== 'merchant';
-var kite = kite || character.range > 50;
 var wallKiteRange = wallKiteRange || 100;
 var autoUCE = autoUCE && true;
 var upgradeTo = upgradeTo || 1;
