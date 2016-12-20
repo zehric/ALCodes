@@ -134,7 +134,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (!target || target.type !== 'character' || 
           current.hp / current.max_hp < target.hp / target.max_hp)) {
       target = current;
-    } else if (priorityMonsters.includes(current.mtype)) {
+    } else if (priorityMonsters.includes(current.mtype) && (!target ||
+        !party.includes(target.name))) {
       if (tanks.includes(current.target) || solo) {
         return current;
       } else {
