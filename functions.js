@@ -38,7 +38,7 @@ function showTransports(e) {
   } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
-    parent.socket.emit('transport', {to: 'test'});
+    parent.socket.emit('transport', {to: 'jail'});
   }
 }
 
@@ -479,10 +479,11 @@ function doPVP(targets) {
 var strongEnemy;
 function flee() {
   strongEnemy = new Date();
-  if (!character.invis && character.ctype === 'rogue') {
+  if (!character.invis && character.ctype === 'rogue' &&
+      (!parent.next_skill.invis || new Date() > parent.next_skill.invis)) {
     invis();
   } else {
-    parent.socket.emit('transport', {to: 'test'});
+    parent.socket.emit('transport', {to: 'jail'});
   }
 }
 
@@ -588,7 +589,7 @@ function invis() {
   if (!character.invis && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
     parent.socket.emit("ability", {
-      name: "invis",
+      name: "invis"
     });
   }
 }
@@ -619,7 +620,7 @@ function charge() {
   if (!parent.next_skill.charge || new Date() > parent.next_skill.charge) {
     lastcharge = new Date();
     parent.socket.emit("ability", {
-      name: "charge",
+      name: "charge"
     });
   }
 }
