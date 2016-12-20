@@ -509,7 +509,7 @@ function attackPlayer(player) {
     }
     if (!attackInterval) {
       attackInterval = setCorrectingInterval(attackLoop,
-        1000 / character.frequency + 30);
+        1000 / character.frequency + attackLoopDelay);
     }
     if (character.range > player.range) {
       rangeMove(player);
@@ -527,7 +527,7 @@ function attackMonster(target) {
     if (target && !attackInterval && !target.dead && !target.rip && 
         can_attack(target)) {
       attackInterval = setCorrectingInterval(attackLoop, 
-        1000 / character.frequency + 30);
+        1000 / character.frequency + attackLoopDelay);
     }
     if (target && !target.dead && !target.rip) {
       rangeMove(target);
@@ -570,7 +570,7 @@ function healPlayer(target) {
     rangeMove(target);
   } else if (can_heal(target) && !attackInterval) {
     attackInterval = setCorrectingInterval(attackLoop, 
-      1000 / character.frequency + 30);
+      1000 / character.frequency + attackLoopDelay);
   }
 }
 

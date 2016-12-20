@@ -37,6 +37,7 @@ tanks = ['bleevl'];
 // if not empty, only attacks priority monsters that are targeting those listed
 
 loopInterval = 200; // increase this if you are disconnecting
+attackLoopDelay = 30; // increase this if your attacks are missing often
 
 /* Priest Config */
 healAt = 0.7;
