@@ -538,7 +538,7 @@ function attackPlayer(player) {
       attackInterval = setCorrectingInterval(attackLoop,
         1000 / character.frequency + attackLoopDelay);
     }
-    if (character.range > player.range) {
+    if (character.range > player.range && distParams) {
       rangeMove(distParams.dist, distParams.theta);
     }
   }
