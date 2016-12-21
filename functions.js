@@ -101,8 +101,8 @@ function rangeMove(dist, theta) {
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
         (xBoundaries.length && (newX < xBoundaries[0] || 
           newX > xBoundaries[1]) ||
-        (yBoundaries.length && (newY > yBoundaries[0] || 
-          newY < yBoundaries[1])))) && theta < 15 && theta > -15) {
+        (yBoundaries.length && (newY < yBoundaries[0] || 
+          newY > yBoundaries[1])))) && theta < 15 && theta > -15) {
       if (counter % 2 === 1) {
         theta += 0.3 * counter;
       } else {
