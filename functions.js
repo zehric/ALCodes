@@ -73,6 +73,9 @@ for (let person of party) {
 }
 
 function canRangeMove(target) {
+  if (!target || target.dead || target.rip) {
+    return false;
+  }
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
   var dist = Math.hypot(dX, dY) - character.range - rangeAdjust;
