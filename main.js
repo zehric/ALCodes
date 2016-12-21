@@ -6,10 +6,9 @@ wallKiteRange = 100; // stay this distance away from walls when kiting
 
 autoUCE = true; // auto upgrade/compound/exchange
 upgradeTo = 7; // for all currently worn equips
-// if true, upgrade everything currently wearing below upgradeTo that can be 
-// bought
+// if true, upgrade everything currently wearing below upgradeTo (if buyable)
 upgradeAll = true; 
-// additional items to upgrade including desired level. will not auto-stat
+// additional items to upgrade including desired level. will not auto-stat.
 upgradeItems = { 
   'xmassweater': 6,
   'mittens': 6
