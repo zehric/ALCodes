@@ -102,11 +102,11 @@ function rangeMove(dist, theta) {
         (xBoundaries.length && (newX < xBoundaries[0] || 
           newX > xBoundaries[1]) ||
         (yBoundaries.length && (newY < yBoundaries[0] || 
-          newY > yBoundaries[1])))) && theta < 15 && theta > -15) {
+          newY > yBoundaries[1])))) && theta < 16 && theta > -16) {
       if (counter % 2 === 1) {
-        theta += 0.3 * counter;
+        theta += 0.2 * counter;
       } else {
-        theta -= 0.3 * counter;
+        theta -= 0.2 * counter;
       }
       farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
       farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
