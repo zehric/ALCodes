@@ -211,6 +211,9 @@ function potions() {
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
       parent.G.monsters[t.mtype].range)) {
+    if (character.afk) {
+      show_json('Fled from ' + t.mtype || t.name);
+    }
     set_message('Fled from ' + t.mtype || t.name);
     flee();
   }
@@ -483,11 +486,13 @@ function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
   if (enemies.length > allies.length) {
-    if (character.afk) {
-      show_json(enemies);
-    }
-    set_message('Too many enemies');
     flee();
+    if (character.afk) {
+      show_json('Too many enemies: ' + enemies.filter(function (e) {
+        return e.name;
+      }));
+    }
+    set_message('Too many enemies');      
   } else {
     var strongestEnemy = enemies[0];
     var strongestAlly = allies[0];
@@ -502,8 +507,11 @@ function doPVP(targets) {
       }
     }
     if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
-      set_message('Fled from ' + strongestEnemy.name);
       flee();
+      set_message('Fled from ' + strongestEnemy.name);
+      if (character.afk) {
+        show_json('Fled from ' + strongestEnemy.name);
+      }
     } else {
       attackPlayer(strongestEnemy);
     }
