@@ -104,7 +104,7 @@ function rangeMove(dist, theta) {
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta < 16 && theta > -16) {
+          farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6) {
       if (counter % 2 === 1) {
         theta += 0.2 * counter;
       } else {
@@ -140,7 +140,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc && (canRangeMove(current) || 
+        !current.npc && (canRangeMove(current) || can_move_to(current) ||
           parent.distance(character, current) <= current.range + 100 ||
           current.ctype === 'ranger')) {
       if (party.includes(current.name)) {
@@ -163,7 +163,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
         continue;
       }
     }
-    if (canRangeMove(current) && (!target || target.type !== 'character') &&
+    if ((canRangeMove(current) || can_move_to(current)) && 
+        (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         current.max_hp <= maxHP && current.xp >= minXP && 
@@ -481,7 +482,10 @@ function playerStrength(player) {
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
-  if (targets.enemies.length > targets.allies.length) {
+  if (enemies.length > allies.length) {
+    if (character.afk) {
+      show_json(enemies);
+    }
     set_message('Too many enemies');
     flee();
   } else {
@@ -527,7 +531,7 @@ function attackPlayer(player) {
   } 
   var distParams = canRangeMove(player);
   if (!in_attack_range(player)) {
-    if (distParams) {
+    if (distParams || can_move_to(player)) {
       change_target(player);
       if (character.ctype === 'warrior') {
         charge();
@@ -545,7 +549,7 @@ function attackPlayer(player) {
       attackInterval = setCorrectingInterval(attackLoop,
         1000 / character.frequency + attackLoopDelay);
     }
-    if (character.range > player.range && distParams) {
+    if (character.range > player.range && (distParams || can_move_to(target))) {
       rangeMove(distParams.dist, distParams.theta);
     }
   }
@@ -553,8 +557,8 @@ function attackPlayer(player) {
 
 function attackMonster(target) {
   var distParams = canRangeMove(target);
-  if (!target || (!distParams && !in_attack_range(target) || 
-      target.dead)) {
+  if (!target || (!distParams && !can_move_to(target) && 
+      !in_attack_range(target) || target.dead)) {
     set_message('No monsters');
   } else {
     if (character.ctype === 'ranger' && useAbilities) {
@@ -605,7 +609,7 @@ function healPlayer(target) {
   set_message('Healing ' + target.name);
   change_target(target);
   var distParams = canRangeMove(target);
-  if (!in_attack_range(target) && distParams) {
+  if (!in_attack_range(target) && (distParams || can_move_to(target))) {
     rangeMove(distParams.dist, distParams.theta);
   } else if (can_heal(target) && !attackInterval) {
     attackInterval = setCorrectingInterval(attackLoop, 
