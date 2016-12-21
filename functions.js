@@ -121,7 +121,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
         !current.npc && (can_move_to(current) || 
-          parent.distance(character, current) <= current.range + 50)) {
+          parent.distance(character, current) <= current.range + 50 ||
+          current.ctype === 'ranger')) {
       if (party.includes(current.name)) {
         allies.push(current);
       } else {
@@ -499,6 +500,9 @@ function attackPlayer(player) {
   if (character.ctype === 'rogue') {
     invis();
   }
+  if (character.ctype === 'ranger') {
+    supershot(target);
+  } 
   if (!in_attack_range(player)) {
     if (can_move_to(player)) {
       change_target(player);
@@ -529,6 +533,9 @@ function attackMonster(target) {
       target.dead)) {
     set_message('No monsters');
   } else {
+    if (character.ctype === 'ranger' && useAbilities) {
+      supershot(target);
+    } 
     set_message('Attacking ' + target.mtype);
     change_target(target);
     if (target && !attackInterval && !target.dead && !target.rip && 
@@ -542,7 +549,7 @@ function attackMonster(target) {
   }
 }
 
-function attackLoop () {
+function attackLoop() {
   var t = get_target();
   if (t && t.type === 'character' && !party.includes(t.name) || useAbilities) {
     useAbilityOn(t);
