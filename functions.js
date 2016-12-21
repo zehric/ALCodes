@@ -500,8 +500,7 @@ function doPVP(targets) {
 var strongEnemy;
 function flee() {
   strongEnemy = new Date();
-  if (!character.invis && character.ctype === 'rogue' &&
-      (!parent.next_skill.invis || new Date() > parent.next_skill.invis)) {
+  if (character.ctype === 'rogue') {
     invis();
   } else {
     parent.socket.emit('transport', {to: 'jail'});
