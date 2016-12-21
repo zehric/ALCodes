@@ -94,7 +94,7 @@ function rangeMove(dist, theta) {
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > character.range + rangeAdjust) {
     move(newX, newY);
-  } else if (kite && (!lastAdjust || new Date() - lastAdjust > 1000)) {
+  } else if (kite && (!lastAdjust || new Date() - lastAdjust > 300)) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
