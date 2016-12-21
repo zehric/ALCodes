@@ -141,7 +141,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
         !current.npc && (canRangeMove(current).canMove || 
             can_move_to(current) ||
           parent.distance(character, current) <= current.range + 100 ||
-          current.ctype === 'ranger')) {
+          (current.ctype === 'ranger' && 
+            parent.distance(character, current) <= 600))) {
       if (party.includes(current.name)) {
         allies.push(current);
       } else {
@@ -537,7 +538,8 @@ function attackPlayer(player) {
   if (character.ctype === 'rogue') {
     invis();
   }
-  if (character.ctype === 'ranger') {
+  if (character.ctype === 'ranger' && 
+      parent.distance(player, character) <= 600) {
     supershot(target);
   } 
   var distParams = canRangeMove(player);
@@ -680,8 +682,8 @@ function charge() {
 }
 
 function supershot(target) {
-  if (!parent.next_skill.supershot || 
-      new Date() > parent.next_skill.supershot) {
+  if ((!parent.next_skill.supershot || 
+      new Date() > parent.next_skill.supershot) && character.mp >= 400) {
     lastsupershot = new Date();
     buy('mpot0', 1);
     parent.socket.emit("ability", {
