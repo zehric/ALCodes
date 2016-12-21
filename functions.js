@@ -540,7 +540,7 @@ function attackPlayer(player) {
 }
 
 function attackMonster(target) {
-  var distParams = canRangeMove(player);
+  var distParams = canRangeMove(target);
   if (!target || (!distParams && !in_attack_range(target) || 
       target.dead)) {
     set_message('No monsters');
