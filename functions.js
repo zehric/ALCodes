@@ -89,12 +89,14 @@ function canRangeMove(target) {
   }
 }
 
+var lastTheta;
+var lastAdjust;
 function rangeMove(dist, theta) {
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > character.range + rangeAdjust) {
     move(newX, newY);
-  } else if (kite) {
+  } else if (kite && (!lastAdjust || new Date() - lastAdjust > 1000)) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
@@ -114,7 +116,12 @@ function rangeMove(dist, theta) {
       newY = character.real_y + dist * Math.sin(theta);
       counter++;
     }
+    lastAdjust = new Date();
+    lastTheta = theta;
     move(newX, newY);
+  } else if (kite) {
+    move(character.real_x + dist * Math.cos(lastTheta),
+         character.real_y + dist * Math.sin(lastTheta));
   }
 }
 
