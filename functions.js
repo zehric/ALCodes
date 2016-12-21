@@ -30,8 +30,6 @@ window.setCorrectingInterval = (function(func, delay) {
   } };
 });
 
-var rangeAdjust = (character.range >= 40) ? 25 : 0;
-
 function showTransports(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
@@ -685,7 +683,7 @@ function supershot(target) {
   if (!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) {
     lastsupershot = new Date();
-    buy('mpot1', 1);
+    buy('mpot0', 1);
     parent.socket.emit("ability", {
       name: "supershot",
       id: target.id
