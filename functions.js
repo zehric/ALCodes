@@ -99,10 +99,10 @@ function rangeMove(dist, theta) {
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
-        (xBoundaries.length && (farX < xBoundaries[0] || 
-          farX > xBoundaries[1]) ||
-        (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta < 15 && theta > -15) {
+        (xBoundaries.length && (newX < xBoundaries[0] || 
+          newX > xBoundaries[1]) ||
+        (yBoundaries.length && (newY > yBoundaries[0] || 
+          newY < yBoundaries[1])))) && theta < 15 && theta > -15) {
       if (counter % 2 === 1) {
         theta += 0.3 * counter;
       } else {
