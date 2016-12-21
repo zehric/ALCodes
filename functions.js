@@ -265,22 +265,18 @@ function uceItem() {
   var scrolls = {}; // name: [idx, desiredQuantity]
   var toExchanges = []; // [idx1, idx2, ...]
   var emptySlots = []; // [idx1, idx2, ...]
-  if (upgradeItems && upgradeItems.length > 0) {
-    for (let name of upgradeItems) {
-      for (let i = 0; i < character.items.length; i++) {
-        if (character.items[i] && character.items[i].name === name) {
-          toUpgrades[name] = i;
-        }
-      }
-      if (!toUpgrades[name] && buyable.includes(name)) {
-        toUpgrades[name] = true;
-      }
-    }
-  } else {
+  if (upgradeAll) {
     for (let slot in character.slots) {
       let item = character.slots[slot];
       if (item && buyable.includes(item.name) && item.level < upgradeTo) {
         toUpgrades[item.name] = true;
+      }
+    }
+  }
+  if (upgradeItems) {
+    for (let name in upgradeItems) {
+      if (!toUpgrades[name] && buyable.includes(name)) {
+        toUpgrades[name] = true;
       }
     }
   }
@@ -311,6 +307,12 @@ function uceItem() {
           }
         }
       }
+      delete toUpgrades[item.name];
+    } else if (upgradeItems[item.name] && 
+        item.level < upgradeItems[item.name]) {
+      toUpgrades[item.name] = i;
+    } else if (upgradeItems[item.name] && 
+        item.level >= upgradeItems[item.name]) {
       delete toUpgrades[item.name];
     } else if (item.name.startsWith('scroll') || 
         item.name.startsWith('cscroll') || item.name === statScroll) { 
@@ -428,12 +430,16 @@ function uceItem() {
   setTimeout(function () {
     for (let u in toUpgrades) {
       let item = character.items[toUpgrades[u]];
-      upgrade(toUpgrades[u], scrolls[correctScroll(item)][0]);
+      if (item) {
+        upgrade(toUpgrades[u], scrolls[correctScroll(item)][0]);
+      }
     }
     for (let c in toCompounds) {
       let cItem = toCompounds[c];
       let item = character.items[cItem[0]];
-      compound(cItem[0], cItem[1], cItem[2], scrolls[correctCScroll(item)][0]);
+      if (item) {
+        compound(cItem[0], cItem[1], cItem[2], scrolls[correctCScroll(item)][0]);
+      }
     }
     for (let s in toStats) {
       upgrade(toStats[s], scrolls[statScroll][0]);
