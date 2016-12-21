@@ -209,27 +209,29 @@ function potions() {
   if (character.mp < character.mp_cost && !hasMPPot1) {
     hasMPPot1 = true;
     buy('mpot1', 1);
+  } else if (character.mp < buyMPPotAt && !hasMPPot0 && !hasMPPot1) {
+    hasMPPot0 = true;
+    buy('mpot0', 1);
   }
   if (!survive && !hasHPPot1) {
     hasHPPot1 = true;
     buy('hpot1', 1);
-  }
-  if (character.mp < buyMPPotAt && !hasMPPot0 && !hasMPPot1) {
-    hasMPPot0 = true;
-    buy('mpot0', 1);
-  }
-  if (character.hp < buyHPPotAt && !hasHPPot0 && !hasHPPot1) {
+  } else if (character.hp < buyHPPotAt && !hasHPPot0 && !hasHPPot1) {
     hasHPPot0 = true;
     buy('hpot0', 1);
   }
   if (new Date() > parent.next_potion) {
-    if (character.max_hp - character.hp > useHP) {
+    if (!survive) {
       hasHPPot1 = false;
-      hasHPPot0 = hasHPPot1 && hasHPPot0;
+      parent.use('hp');
+    } else if (character.mp < character.mp_cost) {
+      hasMPPot1 = false;
+      parent.use('mp');
+    } else if (character.max_hp - character.hp > useHP) {
+      hasHPPot0 = false;
       parent.use('hp');
     } else if (character.max_mp - character.mp > useMP) {
-      hasMPPot1 = false;
-      hasMPPot0 = hasMPPot1 && hasMPPot0;
+      hasMPPot0 = false;
       parent.use('mp');
     }
   }
