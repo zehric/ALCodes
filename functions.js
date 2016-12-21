@@ -91,7 +91,11 @@ function canRangeMove(target) {
 
 var lastTheta;
 var lastAdjust;
-function rangeMove(dist, theta) {
+function rangeMove(target) {
+  var dX = target.real_x - character.real_x;
+  var dY = target.real_y - character.real_y;
+  var dist = Math.hypot(dX, dY) - character.range - rangeAdjust;
+  var theta = Math.atan2(dY, dX);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > character.range + rangeAdjust) {
@@ -544,7 +548,7 @@ function attackPlayer(player) {
       if (character.ctype === 'warrior') {
         charge();
       }
-      rangeMove(distParams.dist, distParams.theta);
+      rangeMove(player);
     } else {
       game_log('cannot move to player');
     }
@@ -557,8 +561,8 @@ function attackPlayer(player) {
       attackInterval = setCorrectingInterval(attackLoop,
         1000 / character.frequency + attackLoopDelay);
     }
-    if (character.range > player.range && (distParams || can_move_to(target))) {
-      rangeMove(distParams.dist, distParams.theta);
+    if (character.range > player.range) {
+      rangeMove(player);
     }
   }
 }
@@ -580,7 +584,7 @@ function attackMonster(target) {
         1000 / character.frequency + attackLoopDelay);
     }
     if (target && !target.dead && !target.rip) {
-      rangeMove(distParams.dist, distParams.theta);
+      rangeMove(target);
     }
   }
 }
@@ -618,7 +622,7 @@ function healPlayer(target) {
   change_target(target);
   var distParams = canRangeMove(target);
   if (!in_attack_range(target) && (distParams || can_move_to(target))) {
-    rangeMove(distParams.dist, distParams.theta);
+    rangeMove(target);
   } else if (can_heal(target) && !attackInterval) {
     attackInterval = setCorrectingInterval(attackLoop, 
       1000 / character.frequency + attackLoopDelay);
