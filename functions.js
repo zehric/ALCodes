@@ -72,14 +72,24 @@ for (let person of party) {
   }
 }
 
-function rangeMove(target) {
+function canRangeMove(target) {
   var dX = target.real_x - character.real_x;
   var dY = target.real_y - character.real_y;
   var dist = Math.hypot(dX, dY) - character.range - rangeAdjust;
   var theta = Math.atan2(dY, dX);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
-  if (!in_attack_range(target)) {
+  if (can_move_to(newX, newY)) {
+    return { dist: dist, theta: theta };
+  } else {
+    return false;
+  }
+}
+
+function rangeMove(dist, theta) {
+  var newX = character.real_x + dist * Math.cos(theta);
+  var newY = character.real_y + dist * Math.sin(theta);
+  if (dist > character.range) {
     move(newX, newY);
   } else if (kite) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
@@ -120,8 +130,8 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc && (can_move_to(current) || 
-          parent.distance(character, current) <= current.range + 50 ||
+        !current.npc && (canRangeMove(current) || 
+          parent.distance(character, current) <= current.range + 100 ||
           current.ctype === 'ranger')) {
       if (party.includes(current.name)) {
         allies.push(current);
@@ -143,7 +153,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         continue;
       }
     }
-    if (can_move_to(current) && (!target || target.type !== 'character') &&
+    if (canRangeMove(current) && (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         current.max_hp <= maxHP && current.xp >= minXP && 
@@ -503,13 +513,14 @@ function attackPlayer(player) {
   if (character.ctype === 'ranger') {
     supershot(target);
   } 
+  var distParams = canRangeMove(player);
   if (!in_attack_range(player)) {
-    if (can_move_to(player)) {
+    if (distParams) {
       change_target(player);
       if (character.ctype === 'warrior') {
         charge();
       }
-      rangeMove(player);
+      rangeMove(distParams.dist, distParams.theta);
     } else {
       game_log('cannot move to player');
     }
@@ -523,13 +534,14 @@ function attackPlayer(player) {
         1000 / character.frequency + attackLoopDelay);
     }
     if (character.range > player.range) {
-      rangeMove(player);
+      rangeMove(distParams.dist, distParams.theta);
     }
   }
 }
 
 function attackMonster(target) {
-  if (!target || (!can_move_to(target) && !in_attack_range(target) || 
+  var distParams = canRangeMove(player);
+  if (!target || (!distParams && !in_attack_range(target) || 
       target.dead)) {
     set_message('No monsters');
   } else {
@@ -544,7 +556,7 @@ function attackMonster(target) {
         1000 / character.frequency + attackLoopDelay);
     }
     if (target && !target.dead && !target.rip) {
-      rangeMove(target);
+      rangeMove(distParams.dist, distParams.theta);
     }
   }
 }
@@ -580,8 +592,9 @@ function useAbilityOn(target) {
 function healPlayer(target) {
   set_message('Healing ' + target.name);
   change_target(target);
-  if (!in_attack_range(target) && can_move_to(target)) {
-    rangeMove(target);
+  var distParams = canRangeMove(target);
+  if (!in_attack_range(target) && distParams) {
+    rangeMove(distParams.dist, distParams.theta);
   } else if (can_heal(target) && !attackInterval) {
     attackInterval = setCorrectingInterval(attackLoop, 
       1000 / character.frequency + attackLoopDelay);
