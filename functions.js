@@ -717,7 +717,8 @@ setCorrectingInterval(function() { // move and attack code
     attackInterval.clear();
     attackInterval = null;
   }
-  if (in_attack_range(target) && pocket && get_player(pocket)) {
+  if ((!target || !in_attack_range(target)) && pocket && get_player(pocket) &&
+      !pocket.rip) {
     var p = get_player(pocket);
     move(p.real_x, p.real_y);
   }
