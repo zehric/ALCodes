@@ -212,10 +212,11 @@ function potions() {
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
       parent.G.monsters[t.mtype].range)) {
+    console.log(t.mtype || t.name);
     if (character.afk) {
-      show_json('Fled from ' + t.mtype || t.name);
+      show_json('Fled from ' + (t.mtype || t.name));
     }
-    set_message('Fled from ' + t.mtype || t.name);
+    set_message('Fled from ' + (t.mtype || t.name));
     flee();
   }
   if (character.mp < character.mp_cost && !hasMPPot1) {
@@ -251,7 +252,7 @@ function potions() {
 
 function willSurvive(target) {
   return !target || party.includes(target.name) || target.dead || target.rip ||
-    target.npc || (target.type === 'monster' && 
+    target.npc || target.ctype === 'merchant' || (target.type === 'monster' && 
       (target.target !== character.name ||
         (parent.G.monsters[target.mtype].damage_type === 'physical' &&
           character.hp > target.attack * (1 - character.armor / 1000)) ||
@@ -541,7 +542,7 @@ function attackPlayer(player) {
   }
   if (character.ctype === 'ranger' && 
       parent.distance(player, character) <= 600) {
-    supershot(target);
+    supershot(player);
   } 
   var distParams = canRangeMove(player);
   if (!in_attack_range(player)) {
