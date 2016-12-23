@@ -30,20 +30,25 @@ window.setCorrectingInterval = (function(func, delay) {
   } };
 });
 
-function showTransports(e) {
+var attackMonsterToggle = true;
+function keybindings(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
   } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
     parent.socket.emit('transport', {to: 'jail'});
+  } else if (e.keyCode === 221) {
+    attackMonsterToggle = !attackMonsterToggle;
+  } else if (e.keyCode === 219) {
+    kite = !kite;
   }
 }
 
-parent.window.addEventListener('keydown', showTransports);
+parent.window.addEventListener('keydown', keybindings);
 
 on_destroy = function () {
-  parent.window.removeEventListener('keydown', showTransports);
+  parent.window.removeEventListener('keydown', keybindings);
 };
 
 on_party_invite = function (name) {
@@ -487,6 +492,7 @@ function playerStrength(player) {
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
+  var injured;
   if (enemies.length > allies.length) {
     flee();
     if (character.afk) {
@@ -505,10 +511,16 @@ function doPVP(targets) {
     }
     for (let ally of allies) {
       if (playerStrength(ally) > playerStrength(strongestAlly)) {
-          strongestAlly = ally;
+        strongestAlly = ally;
+      }
+      if (character.ctype === 'priest' && ally.hp / ally.max_hp < healAt &&
+          (!injured || ally.hp / ally.max_hp < injured.hp / injured.max_hp)) {
+        injured = ally;
       }
     }
-    if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
+    if (injured) {
+      healPlayer(injured);
+    } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
       flee();
       set_message('Fled from ' + strongestEnemy.name);
       if (character.afk) {
@@ -733,7 +745,9 @@ setCorrectingInterval(function() { // move and attack code
     healPlayer(target);
   } else if (target && target.type === 'character') {
     attackPlayer(target);
-  } else {
+  } else if (attackMonsterToggle) {
     attackMonster(target);
+  } else {
+    set_message('No targets.');
   }
 }, loopInterval);
