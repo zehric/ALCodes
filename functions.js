@@ -713,9 +713,10 @@ setCorrectingInterval(function() { // move and attack code
     parent.ctarget = null;
   }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
-  if (attackInterval && !in_attack_range(target) && 
-      new Date() > parent.next_attack || target.type === 'character' && 
-      character.ctype === 'priest' && target.hp / target.max_hp >= healAt) {
+  if (attackInterval && (in_attack_range(target) && 
+      new Date() > parent.next_attack || target && 
+      target.type === 'character' && character.ctype === 'priest' && 
+      target.hp / target.max_hp >= healAt)) {
     attackInterval.clear();
     attackInterval = null;
   }
