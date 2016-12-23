@@ -47,6 +47,10 @@ tanks = ['bleevl'];
 loopInterval = 200; // increase this if you are disconnecting
 attackLoopDelay = 30; // increase this if your attacks are missing often
 
+loopAddition = function () {
+  // put any logic you want to add to the main loop here
+};
+
 /* Priest Config */
 healAt = 0.7;
 pocket = ''; // who to follow when healing

@@ -707,6 +707,15 @@ function supershot(target) {
   }
 }
 
+function chainMove(xs, ys) {
+  var xIdx = xs.indexOf(character.real_x);
+  var yIdx = ys.indexOf(character.real_y);
+  if (xIdx !== -1 && yIdx !== -1 && xIdx < xs.length - 1 && 
+      yIdx < ys.length - 1 && xIdx === yIdx) {
+    move(xs[xIdx + 1], ys[yIdx + 1]);
+  }
+}
+
 setCorrectingInterval(function() { // enchant code
   if (autoUCE) {
     uceItem();
@@ -717,6 +726,7 @@ var attackInterval;
 setCorrectingInterval(function() { // move and attack code
   potions();
   loot();
+  loopAddition();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
