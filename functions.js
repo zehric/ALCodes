@@ -488,7 +488,7 @@ function doPVP(targets) {
   if (enemies.length > allies.length) {
     flee();
     if (character.afk) {
-      show_json('Too many enemies: ' + enemies.filter(function (e) {
+      show_json('Too many enemies: ' + enemies.map(function (e) {
         return e.name;
       }));
     }
