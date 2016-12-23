@@ -158,7 +158,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
     } else if (priorityMonsters.includes(current.mtype) && (!target ||
         !party.includes(target.name))) {
       if (tanks.includes(current.target) || solo) {
-        return current;
+        target = current;
       } else {
         continue;
       }
@@ -167,6 +167,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
+        (!target || !priorityMonsters.includes(target.mtype)) &&
         current.max_hp <= maxHP && current.xp >= minXP && 
         ((target === null || 
             current.xp / current.max_hp > target.xp / target.max_hp) ||
@@ -713,7 +714,8 @@ setCorrectingInterval(function() { // move and attack code
   }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (!in_attack_range(target) && new Date() > parent.next_attack && 
-      attackInterval) {
+      attackInterval || target.type === 'character' && 
+      character.ctype === 'priest' && target.hp / target.max_hp >= healAt) {
     attackInterval.clear();
     attackInterval = null;
   }
@@ -724,7 +726,8 @@ setCorrectingInterval(function() { // move and attack code
   }
   if (target && target.players) {
     doPVP(target);
-  } else if (target && target.type === 'character' && party.includes(target.name)) {
+  } else if (target && target.type === 'character' && 
+      party.includes(target.name)) {
     healPlayer(target);
   } else if (target && target.type === 'character') {
     attackPlayer(target);
