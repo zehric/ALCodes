@@ -321,10 +321,14 @@ function uceItem() {
     } else if (parent.G.items[item.name].e &&
         parent.G.items[item.name].e <= item.q) { // add to exchange
       toExchanges.push(i);
-    } else if (toUpgrades[item.name] && item.level < upgradeTo) { 
+    } else if (toUpgrades[item.name] && !upgradeItems[item.name] && 
+          item.level < upgradeTo ||
+        upgradeItems[item.name] && item.level < upgradeItems[item.name]) { 
       // add to upgrades
       toUpgrades[item.name] = i;
-    } else if (toUpgrades[item.name] && item.level >= upgradeTo) { 
+    } else if (toUpgrades[item.name] && !upgradeItems[item.name] &&
+        item.level >= upgradeTo ||
+      upgradeItems[item.name] && item.level >= upgradeItems[item.name]) { 
       // remove if > upgradeTo
       // add to stats if doesn't have a stat
       if (!item.stat_type && parent.G.items[item.name].stat) {
@@ -341,12 +345,6 @@ function uceItem() {
           }
         }
       }
-      delete toUpgrades[item.name];
-    } else if (upgradeItems[item.name] && 
-        item.level < upgradeItems[item.name]) {
-      toUpgrades[item.name] = i;
-    } else if (upgradeItems[item.name] && 
-        item.level >= upgradeItems[item.name]) {
       delete toUpgrades[item.name];
     } else if (item.name.startsWith('scroll') || 
         item.name.startsWith('cscroll') || item.name === statScroll) { 
