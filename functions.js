@@ -494,7 +494,8 @@ function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
   var injured;
-  if (enemies.length > allies.length) {
+  if (enemies.length > allies.length && !fleeAttempted && 
+      character.map !== 'jail') {
     flee();
     if (character.afk) {
       show_json('Too many enemies: ' + enemies.map(function (e) {
@@ -553,6 +554,10 @@ function flee() {
 
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
+  if (playerStrength(player) > playerStrength(character)) {
+    buy('hpot1', 10);
+    buy('mpot1', 10);
+  }
   if (character.ctype === 'rogue') {
     invis();
   }
@@ -760,7 +765,7 @@ setCorrectingInterval(function() { // move and attack code
   } else if (target && target.type === 'character' && 
       party.includes(target.name)) {
     healPlayer(target);
-  } else if (target && target.type === 'character') {
+  } else if (parent.pvp && target && target.type === 'character') {
     attackPlayer(target);
   } else if (attackMonsterToggle) {
     attackMonster(target);
