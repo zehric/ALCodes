@@ -25,9 +25,6 @@ window.setCorrectingInterval = (function(func, delay) {
   };
 
   tick(func, delay);
-  return { clear: function() {
-      stopped = true;
-  } };
 });
 
 var attackMonsterToggle = true;
@@ -277,6 +274,7 @@ var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade',
                'claw', 'staff'];
 var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
 function uceItem() {
+  if (!autoUCE) return;
   function correctScroll(item) {
     let grades = parent.G.items[item.name].grades;
     if (item.level < grades[0]) {
@@ -487,15 +485,17 @@ function uceItem() {
 
 function playerStrength(player) {
   return (player.attack * player.frequency) + player.armor +
-    player.resistance + player.max_hp + player.speed + player.range;
+    player.resistance + player.max_hp * 0.5 + player.speed + player.range;
 }
 
+var strongEnemy;
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
   var injured;
   if (enemies.length > allies.length && !fleeAttempted && 
       character.map !== 'jail') {
+    strongEnemy = new Date();
     flee();
     if (character.afk) {
       show_json('Too many enemies: ' + enemies.map(function (e) {
@@ -524,6 +524,7 @@ function doPVP(targets) {
       healPlayer(injured);
     } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
         !fleeAttempted && character.map !== 'jail') {
+      strongEnemy = new Date();
       flee();
       set_message('Fled from ' + strongestEnemy.name);
       if (character.afk) {
@@ -535,14 +536,8 @@ function doPVP(targets) {
   }
 }
 
-var strongEnemy;
 var fleeAttempted = false;
 function flee() {
-  strongEnemy = new Date();
-  if (attackInterval) {
-    attackInterval.clear();
-    attackInterval = null;
-  }
   if (character.ctype === 'rogue' && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
     invis();
@@ -554,10 +549,6 @@ function flee() {
 
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
-  if (playerStrength(player) > playerStrength(character)) {
-    buy('hpot1', 10);
-    buy('mpot1', 10);
-  }
   if (character.ctype === 'rogue') {
     invis();
   }
@@ -581,10 +572,6 @@ function attackPlayer(player) {
     if (character.ctype === 'warrior') {
       charge();
     }
-    if (!attackInterval) {
-      attackInterval = setCorrectingInterval(attackLoop,
-        1000 / character.frequency + attackLoopDelay);
-    }
     if (character.range > player.range) {
       rangeMove(distParams.dist, distParams.theta, true);
     }
@@ -602,11 +589,6 @@ function attackMonster(target) {
     } 
     set_message('Attacking ' + target.mtype);
     change_target(target);
-    if (target && !attackInterval && !target.dead && !target.rip && 
-        can_attack(target)) {
-      attackInterval = setCorrectingInterval(attackLoop, 
-        1000 / character.frequency + attackLoopDelay);
-    }
     if (target && !target.dead && !target.rip) {
       rangeMove(distParams.dist, distParams.theta);
     }
@@ -647,9 +629,6 @@ function healPlayer(target) {
   var distParams = canRangeMove(target);
   if (!in_attack_range(target) && (distParams.canMove || can_move_to(target))) {
     rangeMove(distParams.dist, distParams.theta);
-  } else if (can_heal(target) && !attackInterval) {
-    attackInterval = setCorrectingInterval(attackLoop, 
-      1000 / character.frequency + attackLoopDelay);
   }
 }
 
@@ -725,22 +704,16 @@ function chainMove(xs, ys) {
   }
 }
 
-setCorrectingInterval(function() { // enchant code
-  if (autoUCE) {
-    uceItem();
-  }
-}, 1000);
-
-var attackInterval;
-setCorrectingInterval(function() { // move and attack code
+function main() { // move and attack code
   potions();
   loot();
   loopAddition();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
-  if (character.map === 'jail') {
-    fleeAttempted = true;
+  if (character.map === 'jail' || 
+        strongEnemy && new Date() - strongEnemy > 60000) {
+    fleeAttempted = false;
   }
   var target = get_target();
   if (target && (target.dead || target.rip)) {
@@ -748,13 +721,6 @@ setCorrectingInterval(function() { // move and attack code
     parent.ctarget = null;
   }
   target = searchTargets(maxMonsterHP, minMonsterXP, target);
-  if (attackInterval && ((!in_attack_range(target) && 
-      new Date() > parent.next_attack) || (target && 
-      target.type === 'character' && character.ctype === 'priest' && 
-      target.hp / target.max_hp >= healAt))) {
-    attackInterval.clear();
-    attackInterval = null;
-  }
   if ((!target || !in_attack_range(target)) && pocket && get_player(pocket) &&
       !pocket.rip) {
     var p = get_player(pocket);
@@ -772,4 +738,8 @@ setCorrectingInterval(function() { // move and attack code
   } else {
     set_message('No targets.');
   }
-}, loopInterval);
+}
+
+setCorrectingInterval(uceItem, 1000);
+setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
+setCorrectingInterval(main, loopInterval);
