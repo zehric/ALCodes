@@ -31,6 +31,7 @@ window.setCorrectingInterval = (function(func, delay) {
 });
 
 var attackMonsterToggle = true;
+var alwaysAttackTargeted = false;
 function keybindings(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
@@ -42,6 +43,8 @@ function keybindings(e) {
     attackMonsterToggle = !attackMonsterToggle;
   } else if (e.keyCode === 219) {
     kite = !kite;
+  } else if (e.keyCode === 187) {
+    alwaysAttackTargeted = !alwaysAttackTargeted;
   }
 }
 
@@ -94,12 +97,13 @@ function canRangeMove(target) {
 
 var lastTheta;
 var lastAdjust;
-function rangeMove(dist, theta) {
+function rangeMove(dist, theta, forceKite) {
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
     move(newX, newY);
-  } else if (kite && (!lastAdjust || new Date() - lastAdjust > 300)) {
+  } else if ((kite || forceKite) && 
+      (!lastAdjust || new Date() - lastAdjust > 300)) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
@@ -122,19 +126,18 @@ function rangeMove(dist, theta) {
     lastAdjust = new Date();
     lastTheta = theta;
     move(newX, newY);
-  } else if (kite) {
+  } else if (kite || forceKite) {
     move(character.real_x + dist * Math.cos(lastTheta),
          character.real_y + dist * Math.sin(lastTheta));
   }
 }
 
 function searchTargets(maxHP, minXP, currentTarget) {
-  if (currentTarget && !party.includes(currentTarget.name) && (!parent.pvp &&
-        (!currentTarget.target || party.includes(currentTarget.target)) || 
-        (parent.pvp && currentTarget.type === 'character')) && 
+  if (currentTarget && !party.includes(currentTarget.name) && !parent.pvp &&
+        (!currentTarget.target || party.includes(currentTarget.target)) && 
       character.ctype !== 'priest' && 
       (parent.distance(currentTarget, character) <= character.range + 50 || 
-        currentTarget.target === character.name)) {
+        currentTarget.target === character.name) || alwaysAttackTargeted) {
     return currentTarget;
   }
   var target = null;
@@ -143,7 +146,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc && (canRangeMove(current).canMove || 
+        !current.npc && !current.invincible && (canRangeMove(current).canMove || 
             can_move_to(current) ||
           parent.distance(character, current) <= current.range + 100 ||
           (current.ctype === 'ranger' && 
@@ -518,7 +521,8 @@ function doPVP(targets) {
     }
     if (injured) {
       healPlayer(injured);
-    } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy)) {
+    } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
+        !fleeAttempted && character.map !== 'jail') {
       flee();
       set_message('Fled from ' + strongestEnemy.name);
       if (character.afk) {
@@ -531,6 +535,7 @@ function doPVP(targets) {
 }
 
 var strongEnemy;
+var fleeAttempted = false;
 function flee() {
   strongEnemy = new Date();
   if (attackInterval) {
@@ -541,6 +546,7 @@ function flee() {
       new Date() > parent.next_skill.invis)) {
     invis();
   } else {
+    fleeAttempted = true;
     parent.socket.emit('transport', {to: 'jail'});
   }
 }
@@ -575,7 +581,7 @@ function attackPlayer(player) {
         1000 / character.frequency + attackLoopDelay);
     }
     if (character.range > player.range) {
-      rangeMove(distParams.dist, distParams.theta);
+      rangeMove(distParams.dist, distParams.theta, true);
     }
   }
 }
@@ -728,6 +734,9 @@ setCorrectingInterval(function() { // move and attack code
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
+  if (character.map === 'jail') {
+    fleeAttempted = true;
+  }
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
