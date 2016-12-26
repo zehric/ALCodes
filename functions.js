@@ -277,6 +277,9 @@ var wait = false;
 function uceItem() {
   if (!autoUCE || wait) return;
   function correctScroll(item) {
+    if (!item.name) {
+      return null;
+    }
     let grades = parent.G.items[item.name].grades;
     if (item.level < grades[0]) {
       return 'scroll0';
@@ -287,6 +290,9 @@ function uceItem() {
     }
   }
   function correctCScroll(item) {
+    if (!item.level) {
+      return null;
+    }
     if (item.level < 2) {
       return 'cscroll0';
     } else if (item.level < 4) {
@@ -462,6 +468,7 @@ function uceItem() {
   }
   wait = true;
   setTimeout(function () {
+    wait = false;
     for (let u in toUpgrades) {
       let item = character.items[toUpgrades[u]];
       if (item) {
@@ -481,7 +488,6 @@ function uceItem() {
     for (let index of toExchanges) {
       exchange(index);
     }
-    wait = false;
   }, 500);
 }
 
