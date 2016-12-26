@@ -273,8 +273,9 @@ function willSurvive(target) {
 var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade', 
                'claw', 'staff'];
 var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
+var wait = false;
 function uceItem() {
-  if (!autoUCE) return;
+  if (!autoUCE || wait) return;
   function correctScroll(item) {
     let grades = parent.G.items[item.name].grades;
     if (item.level < grades[0]) {
@@ -340,8 +341,7 @@ function uceItem() {
           if (equipped && equipped.name === item.name && 
               equipped.level < item.level && 
               equipped.stat_type === item.stat_type) {
-            parent.socket.emit('unequip', {slot: slot});
-            setTimeout(function () { equip(i); }, 500);
+            equip(i);
             break;
           }
         }
@@ -460,6 +460,7 @@ function uceItem() {
       }
     }
   }
+  wait = true;
   setTimeout(function () {
     for (let u in toUpgrades) {
       let item = character.items[toUpgrades[u]];
@@ -480,6 +481,7 @@ function uceItem() {
     for (let index of toExchanges) {
       exchange(index);
     }
+    wait = false;
   }, 500);
 }
 
