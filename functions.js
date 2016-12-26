@@ -698,9 +698,13 @@ function supershot(target) {
 function chainMove(xs, ys) {
   var xIdx = xs.indexOf(character.real_x);
   var yIdx = ys.indexOf(character.real_y);
+  attackMonsterToggle = false;
   if (xIdx !== -1 && yIdx !== -1 && xIdx < xs.length - 1 && 
       yIdx < ys.length - 1 && xIdx === yIdx) {
     move(xs[xIdx + 1], ys[yIdx + 1]);
+  }
+  if (xIdx === xs.length - 1 && yIdx === ys.length - 1) {
+    attackMonsterToggle = true;
   }
 }
 
