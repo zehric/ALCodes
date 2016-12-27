@@ -382,22 +382,22 @@ function uceItem() {
       if (character.gold >= parent.G.items[item].g) {
         toUpgrades[item] = emptySlots.shift();
         buy(item, 1);
+        if (!scrolls[s] && character.gold >= parent.G.items[s].g) {
+          scrolls[s] = [null, 1];
+        } else if (scrolls[s] && (scrolls[s][0] !== null && 
+          character.gold >= parent.G.items[s].g *
+          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
+          scrolls[s][0] === null && 
+          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
+            scrolls[s][1] += 1;
+        } else {
+          delete toUpgrades[item];
+        }
       } else {
         delete toUpgrades[item];
       }
     } else {
       s = correctScroll(character.items[index]);
-    }
-    if (!scrolls[s] && character.gold >= parent.G.items[s].g) {
-      scrolls[s] = [null, 1];
-    } else if (scrolls[s] && (scrolls[s][0] !== null && 
-        character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
-        scrolls[s][0] === null && 
-          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
-      scrolls[s][1] += 1;
-    } else {
-      delete toUpgrades[item];
     }
   }
   for (let item in toCompounds) { // add to scrolls
