@@ -583,7 +583,8 @@ function attackMonster(target) {
       !in_attack_range(target) || target.dead)) {
     set_message('No monsters');
   } else {
-    if (character.ctype === 'ranger' && useAbilities) {
+    if (character.ctype === 'ranger' && (useAbilities === true ||
+        useAbilities !== false && useAbilities <= target.max_hp)) {
       supershot(target);
     } 
     set_message('Attacking ' + target.mtype);
@@ -598,7 +599,12 @@ function attackMonster(target) {
 
 function attackLoop() {
   var t = get_target();
-  if (t && t.type === 'character' && !party.includes(t.name) || useAbilities) {
+  if (!t || t.dead || t.rip) {
+    return;
+  }
+  if (t && t.type === 'character' && !party.includes(t.name) ||
+      t && t.type === 'monster' && (useAbilities === true ||
+        useAbilities !== false && useAbilities <= target.max_hp)) {
     useAbilityOn(t);
   }
   if (t && party.includes(t.name) && character.ctype === 'priest') {
