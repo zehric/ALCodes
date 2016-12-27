@@ -589,7 +589,9 @@ function attackMonster(target) {
     set_message('Attacking ' + target.mtype);
     change_target(target);
     if (target && !target.dead && !target.rip) {
-      rangeMove(distParams.dist, distParams.theta);
+      rangeMove(distParams.dist, distParams.theta, 
+                priorityMonsters.includes(target.mtype) && solo && 
+                  character.range > 50);
     }
   }
 }
