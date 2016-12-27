@@ -604,7 +604,7 @@ function attackLoop() {
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
       t && t.type === 'monster' && (useAbilities === true ||
-        useAbilities !== false && useAbilities <= target.max_hp)) {
+        useAbilities !== false && useAbilities <= t.max_hp)) {
     useAbilityOn(t);
   }
   if (t && party.includes(t.name) && character.ctype === 'priest') {
