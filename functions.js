@@ -378,26 +378,26 @@ function uceItem() {
     let index = toUpgrades[item];
     let s;
     if (typeof(index) !== 'number') {
-      s = 'scroll0';
       if (character.gold >= parent.G.items[item].g) {
         toUpgrades[item] = emptySlots.shift();
         buy(item, 1);
-        if (!scrolls[s] && character.gold >= parent.G.items[s].g) {
-          scrolls[s] = [null, 1];
-        } else if (scrolls[s] && (scrolls[s][0] !== null && 
-          character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
-          scrolls[s][0] === null && 
-          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
-            scrolls[s][1] += 1;
-        } else {
-          delete toUpgrades[item];
-        }
+        s = 'scroll0';
       } else {
         delete toUpgrades[item];
       }
     } else {
       s = correctScroll(character.items[index]);
+    }
+    if (s && !scrolls[s] && character.gold >= parent.G.items[s].g) {
+      scrolls[s] = [null, 1];
+    } else if (s && scrolls[s] && (scrolls[s][0] !== null && 
+        character.gold >= parent.G.items[s].g *
+          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
+        scrolls[s][0] === null && 
+          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
+      scrolls[s][1] += 1;
+    } else {
+      delete toUpgrades[item];
     }
   }
   for (let item in toCompounds) { // add to scrolls
