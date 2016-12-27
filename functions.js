@@ -275,7 +275,7 @@ var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade',
 var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
 var wait = false;
 function uceItem() {
-  if (!autoUCE || wait) return;
+  if (!autoUCE || wait || character.map === 'bank') return;
   function correctScroll(item) {
     if (!item.name) {
       return null;
@@ -374,38 +374,30 @@ function uceItem() {
   if (emptySlots.length === 0) {
     return;
   }
-
   for (let item in toUpgrades) { // buy items and add to scrolls
     let index = toUpgrades[item];
+    let s;
     if (typeof(index) !== 'number') {
-      if (character.gold >= parent.G.items[item].g && 
-          (scrolls['scroll0'] || 
-            character.gold >= parent.G.items[item].g + 1000)) {
+      s = 'scroll0';
+      if (character.gold >= parent.G.items[item].g) {
         toUpgrades[item] = emptySlots.shift();
         buy(item, 1);
-        if (!scrolls['scroll0']) {
-          scrolls['scroll0'] = [null, 1];
-        } else {
-          scrolls['scroll0'][1] += 1;
-        }
       } else {
         delete toUpgrades[item];
       }
     } else {
-      let itemObject = character.items[index];
-      let s = correctScroll(itemObject);
-      if (scrolls[s] && scrolls[s][0] !== null && 
-            character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] - character.items[scrolls[s][0]].q) || !scrolls[s] &&
-          character.gold >= parent.G.items[s].g) {
-        if (!scrolls[s]) {
-          scrolls[s] = [null, 1];
-        } else {
-          scrolls[s][1] += 1;
-        }
-      } else {
-        delete toUpgrades[item];
-      }
+      s = correctScroll(character.items[index]);
+    }
+    if (!scrolls[s] && character.gold >= parent.G.items[s].g) {
+      scrolls[s] = [null, 1];
+    } else if (scrolls[s] && (scrolls[s][0] !== null && 
+        character.gold >= parent.G.items[s].g *
+          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
+        scrolls[s][0] === null && 
+          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
+      scrolls[s][1] += 1;
+    } else {
+      delete toUpgrades[item];
     }
   }
   for (let item in toCompounds) { // add to scrolls
@@ -413,15 +405,14 @@ function uceItem() {
     if (indices.length === 3) {
       let itemObject = character.items[indices[0]];
       let cs = correctCScroll(itemObject);
-      if (scrolls[cs] && scrolls[cs][0] !== null && character.gold >= 
-            parent.G.items[cs].g *
-          (scrolls[cs][1] - character.items[scrolls[cs][0]].q) || 
-            !scrolls[cs] && character.gold >= parent.G.items[cs].g) {
-        if (!scrolls[cs]) {
-          scrolls[cs] = [null, 1];
-        } else {
-          scrolls[cs][1] += 1;
-        }
+      if (!scrolls[cs] && character.gold >= parent.G.items[cs].g) {
+        scrolls[cs] = [null, 1];
+      } else if (scrolls[cs] && (scrolls[cs][0] !== null && 
+          character.gold >= parent.G.items[cs].g *
+            (scrolls[cs][1] + 1 - character.items[scrolls[cs][0]].q) ||
+          scrolls[cs][0] === null && 
+            character.gold >= parent.G.items[cs].g * (scrolls[cs][1] + 1))) {
+        scrolls[cs][1] += 1;
       } else {
         delete toCompounds[item];
       }
