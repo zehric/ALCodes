@@ -290,7 +290,7 @@ function uceItem() {
     }
   }
   function correctCScroll(item) {
-    if (!item.level) {
+    if (typeof(item.level) !== 'number') {
       return null;
     }
     if (item.level < 2) {
