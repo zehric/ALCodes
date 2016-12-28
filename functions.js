@@ -758,7 +758,6 @@ function charge() {
 }
 
 function supershot(target) {
-  return;
   if ((!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) && character.mp >= 400) {
     lastsupershot = new Date();
