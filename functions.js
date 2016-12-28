@@ -75,14 +75,71 @@ for (let person of party) {
   }
 }
 
+function closestPoints(e1, e2) {
+  var w1 = ('awidth' in e1) ? e1.awidth : e1.width;
+  var h1 = ('aheight' in e1) ? e1.aheight : e1.height;
+  var x1 = ('real_x' in e1) ? e1.real_x : e1.x;
+  var y1 = ('real_y' in e1) ? e1.real_y : e1.y;
+  var w2 = ('awidth' in e2) ? e2.awidth : e2.width;
+  var h2 = ('aheight' in e2) ? e2.aheight : e2.height;
+  var x2 = ('real_x' in e2) ? e2.real_x : e2.x;
+  var y2 = ('real_y' in e2) ? e2.real_y : e2.y;
+  
+  var shortest = Infinity;
+  var points;
+
+  var box1 = [
+    { x: x1 - w1 / 2, y: y1 - h1 }, // upper left
+    { x: x1 + w1 / 2, y: y1 - h1 }, // upper right
+    { x: x1 - w1 / 2, y: y1 }, // lower left
+    { x: x1 + w1 / 2, y: y1 } // lower right
+  ];
+  var box2 = [
+      { x: x2 - w2 / 2, y: y2 - h2 },
+      { x: x2 + w2 / 2, y: y2 - h2 },
+      { x: x2 - w2 / 2, y: y2 },
+      { x: x2 + w2 / 2, y: y2 }
+  ];
+
+  box1.forEach(function (p1) {
+    box2.forEach(function (p2) {
+      let length = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      if (length < shortest) {
+        shortest = length;
+        points = [p1, p2];
+      }
+    });
+  });
+
+  if (box1[0].x <= box2[3].x && box2[0].x <= box1[3].x &&
+      box1[0].y <= box2[3].y && box2[0].y <= box1[3].y) {
+    points[1] = points[0];
+  }
+
+  return points;
+}
+
+function vector(points) {
+  var dX = points[1].x - points[0].x;
+  var dY = points[1].y - points[0].y;
+  return {
+    length: Math.hypot(dX, dY),
+    theta: Math.atan2(dY, dX)
+  };
+}
+
 function canRangeMove(target) {
   if (!target || target.dead || target.rip) {
     return false;
   }
-  var dX = target.real_x - character.real_x;
-  var dY = target.real_y - character.real_y;
-  var dist = Math.hypot(dX, dY) - character.range - rangeAdjust;
-  var theta = Math.atan2(dY, dX);
+  var vec = vector(closestPoints(character, target));
+  var theta = vec.theta;
+  var rangeAdjust = target.moving ? 
+                    Math.cos(target.angle * Math.PI / 180 - theta) * 
+                      target.speed * (target.speed / character.range): 
+                    0;
+  rangeAdjust = rangeAdjust > 0 ? rangeAdjust : 0;
+  var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   return {
@@ -104,7 +161,7 @@ function rangeMove(dist, theta, forceKite) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
-    while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) || 
+    while ((!can_move_to(farX, farY) || 
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
@@ -116,8 +173,8 @@ function rangeMove(dist, theta, forceKite) {
       }
       farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
       farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
-      newX = character.real_x + dist * Math.cos(theta);
-      newY = character.real_y + dist * Math.sin(theta);
+      newX = farX;
+      newY = farY;
       counter++;
     }
     lastAdjust = new Date();
@@ -701,6 +758,7 @@ function charge() {
 }
 
 function supershot(target) {
+  return;
   if ((!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) && character.mp >= 400) {
     lastsupershot = new Date();
