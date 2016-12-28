@@ -95,10 +95,10 @@ function closestPoints(e1, e2) {
     { x: x1 + w1 / 2, y: y1 } // lower right
   ];
   var box2 = [
-      { x: x2 - w2 / 2, y: y2 - h2 },
-      { x: x2 + w2 / 2, y: y2 - h2 },
-      { x: x2 - w2 / 2, y: y2 },
-      { x: x2 + w2 / 2, y: y2 }
+    { x: x2 - w2 / 2, y: y2 - h2 },
+    { x: x2 + w2 / 2, y: y2 - h2 },
+    { x: x2 - w2 / 2, y: y2 },
+    { x: x2 + w2 / 2, y: y2 }
   ];
 
   box1.forEach(function (p1) {
@@ -154,40 +154,52 @@ function canRangeMove(target) {
   };
 }
 
-var lastTheta;
-var lastAdjust;
+var lastPlus;
+var lastMinus;
 function rangeMove(dist, theta, forceKite) {
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
     move(newX, newY);
-  } else if ((kite || forceKite) && 
-      (!lastAdjust || new Date() - lastAdjust > 300)) {
+  } else if (kite || forceKite) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
-    while ((!can_move_to(farX, farY) || 
+    while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) ||
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
           farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6) {
-      if (counter % 2 === 1) {
-        theta += 0.2 * counter;
-      } else {
-        theta -= 0.2 * counter;
+      if (!lastPlus && !lastMinus || 
+            new Date() - lastPlus > 1000 && new Date() - lastMinus > 1000) {
+        if (counter % 2 === 1) {
+          theta += 0.2 * counter;
+        } else {
+          theta -= 0.2 * counter;
+        }
+      } else if (lastPlus && new Date() - lastPlus <= 1000) {
+        counter++;
+        theta -= 0.2;
+      } else if (lastMinus && new Date() - lastMinus <= 1000) {
+        counter++;
+        theta += 0.2;
       }
       farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
       farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
-      newX = farX;
-      newY = farY;
+      newX = character.real_x + 
+             (dist - wallKiteRange / 63 * Math.ceil(counter / 2)) * 
+             Math.cos(theta);
+      newY = character.real_y +
+             (dist - wallKiteRange / 63 * Math.ceil(counter / 2)) * 
+             Math.sin(theta);
       counter++;
     }
-    lastAdjust = new Date();
-    lastTheta = theta;
+    if (counter % 2 === 1) {
+      lastPlus = new Date();
+    } else {
+      lastMinus = new Date();
+    }
     move(newX, newY);
-  } else if (kite || forceKite) {
-    move(character.real_x + dist * Math.cos(lastTheta),
-         character.real_y + dist * Math.sin(lastTheta));
   }
 }
 
@@ -609,11 +621,11 @@ function doPVP(targets) {
 
 var fleeAttempted = false;
 function flee() {
+  fleeAttempted = true;
   if (character.ctype === 'rogue' && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
     invis();
   } else {
-    fleeAttempted = true;
     parent.socket.emit('transport', {to: 'jail'});
   }
 }
@@ -671,7 +683,8 @@ function attackMonster(target) {
 
 function attackLoop() {
   var t = get_target();
-  if (!t || t.dead || t.rip) {
+  if (!t || t.dead || t.rip || 
+      strongEnemy && new Date() - strongEnemy <= 60000 && !fleeAttempted) {
     return;
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
@@ -725,6 +738,7 @@ function curse(target) {
 function invis() {
   if (!character.invis && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
+    fleeAttempted = false;
     parent.socket.emit("ability", {
       name: "invis"
     });
