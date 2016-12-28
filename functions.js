@@ -339,9 +339,9 @@ function uceItem() {
       upgradeItems[item.name] && item.level >= upgradeItems[item.name]) { 
       // remove if > upgradeTo
       // add to stats if doesn't have a stat
-      if (!item.stat_type && parent.G.items[item.name].stat) {
+      if (!item.stat_type && parent.G.items[item.name].stat && autoStat) {
         toStats[item.name] = i;
-      } else { // autoequip
+      } else if (autoStat) { // autoequip
         for (let slot in character.slots) {
           let equipped = character.slots[slot];
           if (equipped && equipped.name === item.name && 
