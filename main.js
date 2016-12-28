@@ -8,6 +8,7 @@ wallKiteRange = 100; // stay this distance away from walls when kiting
 rangeAdjust = (character.range >= 40) ? 20 : 0;
 
 autoUCE = true; // auto upgrade/compound/exchange
+autoStat = true; // will also enable/disable autoEquip
 upgradeTo = 7; // for all currently worn equips
 // if true, upgrade everything currently wearing below upgradeTo (if buyable)
 upgradeAll = true; 
