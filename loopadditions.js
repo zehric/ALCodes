@@ -22,7 +22,7 @@ if (leftJail) {
   leftJail = false;
 }
 if (character.map === 'halloween') {
-  chainMove([0, 0], [0, -500]);
+  chainMove([0, 0], [0, 500]);
 }
 
 // bats

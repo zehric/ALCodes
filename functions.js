@@ -433,12 +433,22 @@ function uceItem() {
       } else {
         delete toStats[item];
       }
-    } else {
+    } else if (correctScroll(itemObject) === 'scroll1') {
       if (character.gold >= parent.G.items[statScroll].g * 10) {
         if (!scrolls[statScroll]) {
           scrolls[statScroll] = [null, 10];
         } else {
           scrolls[statScroll][1] += 10;
+        }
+      } else {
+        delete toStats[item];
+      }
+    } else {
+      if (character.gold >= parent.G.items[statScroll].g * 100) {
+        if (!scrolls[statScroll]) {
+          scrolls[statScroll] = [null, 100];
+        } else {
+          scrolls[statScroll][1] += 100;
         }
       } else {
         delete toStats[item];
@@ -705,13 +715,9 @@ function supershot(target) {
 function chainMove(xs, ys) {
   var xIdx = xs.indexOf(character.real_x);
   var yIdx = ys.indexOf(character.real_y);
-  attackMonsterToggle = false;
   if (xIdx !== -1 && yIdx !== -1 && xIdx < xs.length - 1 && 
       yIdx < ys.length - 1 && xIdx === yIdx) {
     move(xs[xIdx + 1], ys[yIdx + 1]);
-  }
-  if (xIdx === xs.length - 1 && yIdx === ys.length - 1) {
-    attackMonsterToggle = true;
   }
 }
 
