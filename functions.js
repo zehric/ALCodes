@@ -134,11 +134,16 @@ function canRangeMove(target) {
   }
   var vec = vector(closestPoints(character, target));
   var theta = vec.theta;
-  var rangeAdjust = target.moving ? 
-                    Math.cos(target.angle * Math.PI / 180 - theta) * 
-                      target.speed : 
-                    0;
-  rangeAdjust = rangeAdjust > 0 ? rangeAdjust : 0;
+  var rangeAdjust;
+  if (target.moving) {
+    rangeAdjust = (character.speed / (character.speed + target.speed)) *
+      (Math.cos(target.angle * Math.PI / 180 - theta) * 
+        target.speed * (loopInterval / 1000) -
+      (target.speed / character.speed) * (vec.length - character.range));
+  } else {
+    rangeAdjust = 0;
+  }
+  rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
