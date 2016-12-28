@@ -136,7 +136,7 @@ function canRangeMove(target) {
   var theta = vec.theta;
   var rangeAdjust = target.moving ? 
                     Math.cos(target.angle * Math.PI / 180 - theta) * 
-                      target.speed * (target.speed / character.range): 
+                      target.speed : 
                     0;
   rangeAdjust = rangeAdjust > 0 ? rangeAdjust : 0;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
