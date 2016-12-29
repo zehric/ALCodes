@@ -51,6 +51,12 @@ on_destroy = function () {
   parent.window.removeEventListener('keydown', keybindings);
 };
 
+handle_death = function () {
+  setTimeout(respawn, 15000);
+  setTimeout(flee, 15200);
+  return true;
+}
+
 on_party_invite = function (name) {
   if (party.includes(name)) {
     accept_party_invite(name);
@@ -850,6 +856,7 @@ function chainMove(xs, ys) {
 }
 
 function main() { // move and attack code
+  if (character.rip) return;
   potions();
   loot();
   loopAddition();
