@@ -842,7 +842,8 @@ function equipWeapon() {
   }
   if (character.slots['offhand'] === null) {
     for (let i = character.items.length; i >= 0; i--) {
-      if (character.items[i] && character.items[i].name === 'blade') {
+      if (character.items[i] && character.items[i].name === 'blade' &&
+          character.items[i].level >= 8) {
         equip(i);
       }
     }
