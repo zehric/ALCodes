@@ -154,6 +154,8 @@ function canRangeMove(target) {
   };
 }
 
+var lastTheta;
+var lastAdjust;
 var lastPlus;
 var lastMinus;
 function rangeMove(dist, theta, forceKite) {
@@ -161,7 +163,8 @@ function rangeMove(dist, theta, forceKite) {
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
     move(newX, newY);
-  } else if (kite || forceKite) {
+  } else if ((kite || forceKite) && 
+      (!lastAdjust || new Date() - lastAdjust > 300)) {
     var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
     var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
     var counter = 1;
@@ -199,7 +202,12 @@ function rangeMove(dist, theta, forceKite) {
     } else {
       lastMinus = new Date();
     }
+    lastAdjust = new Date();
+    lastTheta = theta;
     move(newX, newY);
+  } else if (kite || forceKite) {
+    move(character.real_x + dist * Math.cos(lastTheta),
+         character.real_y + dist * Math.sin(lastTheta));
   }
 }
 
@@ -700,7 +708,8 @@ function attackMonster(target) {
 function attackLoop() {
   var t = get_target();
   if (!t || t.dead || t.rip || 
-      strongEnemy && new Date() - strongEnemy <= 60000 && !fleeAttempted ||
+      character.invis && strongEnemy && new Date() - strongEnemy <= 60000 && 
+        !fleeAttempted ||
       character.invis && character.hp / character.max_hp < 0.9) {
     return;
   }
