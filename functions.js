@@ -52,8 +52,14 @@ on_destroy = function () {
 };
 
 handle_death = function () {
-  setTimeout(respawn, 15000);
-  setTimeout(flee, 15200);
+  function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+  var timer = getRandomInt(12000, 300000);
+  setTimeout(respawn, timer);
+  setTimeout(flee, timer + 200);
   return true;
 }
 
