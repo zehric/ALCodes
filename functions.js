@@ -349,7 +349,11 @@ var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade',
 var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
 var wait = false;
 function uceItem() {
-  if (!autoUCE || wait || character.map === 'bank') return;
+  if (!autoUCE || wait || character.map === 'bank' || 
+      character.slots['offhand'] === null || 
+      character.slots['offhand'].name === 'shield') {
+    return;
+  }
   function correctScroll(item) {
     if (!item.name) {
       return null;
