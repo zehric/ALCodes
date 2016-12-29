@@ -877,10 +877,6 @@ function main() { // move and attack code
   }
 }
 
-strongEnemy = new Date();
-rvr = true;
-flee();
-
 setCorrectingInterval(uceItem, 1000);
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
 setCorrectingInterval(main, loopInterval);
