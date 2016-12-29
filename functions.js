@@ -847,6 +847,9 @@ function main() { // move and attack code
   if (fledSuccess() || 
         strongEnemy && new Date() - strongEnemy > 60000) {
     fleeAttempted = false;
+    if (rvr) {
+      change_target(get_nearest_monster());
+    }
     rvr = false;
   }
   var target = get_target();
@@ -873,6 +876,10 @@ function main() { // move and attack code
     set_message('No targets.');
   }
 }
+
+strongEnemy = new Date();
+rvr = true;
+flee();
 
 setCorrectingInterval(uceItem, 1000);
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
