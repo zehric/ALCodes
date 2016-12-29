@@ -787,7 +787,8 @@ function charge() {
 }
 
 function equipShield() {
-  if (character.slots['offhand'].name !== 'shield') {
+  if (!character.slots['offhand'] || 
+      character.slots['offhand'].name !== 'shield') {
     for (let i = character.items.length; i >= 0; i--) {
       if (character.items[i] && character.items[i].name === 'shield') {
         equip(i);
