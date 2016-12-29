@@ -170,7 +170,10 @@ var lastTheta;
 var lastAdjust;
 var lastPlus;
 var lastMinus;
-function rangeMove(dist, theta, forceKite) {
+function rangeMove(dist, theta, forceKite, isPVP) {
+  if (isPVP) {
+    wallKiteRange = 0;
+  }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
@@ -682,7 +685,7 @@ function attackPlayer(player) {
         charge();
         equipShield();
       }
-      rangeMove(distParams.dist, distParams.theta);
+      rangeMove(distParams.dist, distParams.theta, false, true);
     } else {
       game_log('cannot move to player');
     }
@@ -692,7 +695,7 @@ function attackPlayer(player) {
       equipWeapon();
     }
     if (character.range > player.range) {
-      rangeMove(distParams.dist, distParams.theta, true);
+      rangeMove(distParams.dist, distParams.theta, true, true);
     }
   }
 }
