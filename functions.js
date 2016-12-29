@@ -171,22 +171,27 @@ var lastAdjust;
 var lastPlus;
 var lastMinus;
 function rangeMove(dist, theta, forceKite, isPVP) {
-  var wkr = wallKiteRange;
-  let wallKiteRange = isPVP ? 0 : wkr;
+  var wkr;
+  if (isPVP) {
+    wkr = 0;
+  } else {
+    wkr = wallKiteRange;
+  }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
     move(newX, newY);
   } else if ((kite || forceKite) && 
       (!lastAdjust || new Date() - lastAdjust > 300)) {
-    var farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
-    var farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
+    var farX = character.real_x + (dist - wkr) * Math.cos(theta);
+    var farY = character.real_y + (dist - wkr) * Math.sin(theta);
     var counter = 1;
     while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) ||
         (xBoundaries.length && (farX < xBoundaries[0] || 
           farX > xBoundaries[1]) ||
         (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6) {
+          farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6 &&
+        counter <= 127) {
       if (!lastPlus && !lastMinus || 
             new Date() - lastPlus > 1000 && new Date() - lastMinus > 1000) {
         if (counter % 2 === 1) {
@@ -201,14 +206,12 @@ function rangeMove(dist, theta, forceKite, isPVP) {
         counter++;
         theta += 0.2;
       }
-      farX = character.real_x + (dist - wallKiteRange) * Math.cos(theta);
-      farY = character.real_y + (dist - wallKiteRange) * Math.sin(theta);
+      farX = character.real_x + (dist - wkr) * Math.cos(theta);
+      farY = character.real_y + (dist - wkr) * Math.sin(theta);
       newX = character.real_x + 
-             (dist - wallKiteRange / 63 * Math.ceil(counter / 2)) * 
-             Math.cos(theta);
+             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.cos(theta);
       newY = character.real_y +
-             (dist - wallKiteRange / 63 * Math.ceil(counter / 2)) * 
-             Math.sin(theta);
+             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.sin(theta);
       counter++;
     }
     if (counter % 2 === 1) {
@@ -736,7 +739,8 @@ function attackLoop() {
     if (t.hp / t.max_hp <= healAt) {
       heal(t);
     }
-  } else if (t && !t.dead && !t.rip && in_attack_range(t)) {
+  } else if (t && !t.dead && !t.rip && in_attack_range(t) && 
+      !party.includes(t.name)) {
     attack(t);
   }
 }
