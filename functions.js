@@ -290,7 +290,7 @@ function potions() {
   var t = get_target();
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
-      parent.G.monsters[t.mtype].range)) {
+      parent.G.monsters[t.mtype].range) + 25) {
     console.log(t.mtype || t.name);
     if (character.afk) {
       show_json('Fled from ' + (t.mtype || t.name));
@@ -606,7 +606,8 @@ function doPVP(targets) {
     if (injured) {
       healPlayer(injured);
     } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
-        !fleeAttempted && character.map !== 'jail') {
+        !fleeAttempted && !fledSuccess() || 
+        character.hp / character.max_hp < 0.5) {
       strongEnemy = new Date();
       flee();
       set_message('Fled from ' + strongestEnemy.name);
@@ -617,6 +618,10 @@ function doPVP(targets) {
       attackPlayer(strongestEnemy);
     }
   }
+}
+
+function fledSuccess() {
+  return character.map === 'jail';
 }
 
 var fleeAttempted = false;
@@ -645,6 +650,7 @@ function attackPlayer(player) {
       change_target(player);
       if (character.ctype === 'warrior') {
         charge();
+        equipShield();
       }
       rangeMove(distParams.dist, distParams.theta);
     } else {
@@ -653,7 +659,7 @@ function attackPlayer(player) {
   } else if (!player.rip) {
     change_target(player);
     if (character.ctype === 'warrior') {
-      charge();
+      equipWeapon();
     }
     if (character.range > player.range) {
       rangeMove(distParams.dist, distParams.theta, true);
@@ -776,6 +782,29 @@ function charge() {
   }
 }
 
+function equipShield() {
+  if (character.slots['offhand'].name !== 'shield') {
+    for (let i = character.items.length; i >= 0; i--) {
+      if (character.items[i] && character.items[i].name === 'shield') {
+        equip(i);
+      }
+    }
+  }
+}
+
+function equipWeapon() {
+  if (character.slots['offhand'] !== null) {
+    parent.socket.emit('unequip', {slot: 'offhand'});
+  }
+  if (character.slots['offhand'] === null) {
+    for (let i = character.items.length; i >= 0; i--) {
+      if (character.items[i] && character.items[i].name === 'blade') {
+        equip(i);
+      }
+    }
+  }
+}
+
 function supershot(target) {
   if ((!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) && character.mp >= 400) {
@@ -804,7 +833,7 @@ function main() { // move and attack code
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
-  if (character.map === 'jail' || 
+  if (fledSuccess() || 
         strongEnemy && new Date() - strongEnemy > 60000) {
     fleeAttempted = false;
   }
