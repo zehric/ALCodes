@@ -159,7 +159,7 @@ function canRangeMove(target) {
     rangeAdjust = 0;
   }
   rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
-  rangeAdjust = (target.type === 'character') ? rangeAdjust * 5 : rangeAdjust;
+  rangeAdjust = (target.speed >= 40) ? rangeAdjust * 5 : rangeAdjust;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
