@@ -181,6 +181,9 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   } else {
     wkr = wallKiteRange;
   }
+  if (character.range <= 50) {
+    dist -= character.range;
+  }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
