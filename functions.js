@@ -171,9 +171,8 @@ var lastAdjust;
 var lastPlus;
 var lastMinus;
 function rangeMove(dist, theta, forceKite, isPVP) {
-  if (isPVP) {
-    wallKiteRange = 0;
-  }
+  var wkr = wallKiteRange;
+  let wallKiteRange = isPVP ? 0 : wkr;
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
