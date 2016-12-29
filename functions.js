@@ -217,7 +217,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc && !current.invincible && (canRangeMove(current).canMove || 
+        !current.npc && (canRangeMove(current).canMove || 
             can_move_to(current) ||
           parent.distance(character, current) <= current.range + 100 ||
           (current.ctype === 'ranger' && 
@@ -611,14 +611,15 @@ function doPVP(targets) {
       healPlayer(injured);
     } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
         !fleeAttempted && !fledSuccess() || 
-        character.hp / character.max_hp < 0.5) {
+        (character.hp / character.max_hp < 0.5 && allies.length < 2)) {
       strongEnemy = new Date();
+      rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
       flee();
       set_message('Fled from ' + strongestEnemy.name);
       if (character.afk) {
         show_json('Fled from ' + strongestEnemy.name);
       }
-    } else {
+    } else if (!strongestEnemy.invincible) {
       attackPlayer(strongestEnemy);
     }
   }
@@ -629,6 +630,7 @@ function fledSuccess() {
 }
 
 var fleeAttempted = false;
+var rvr = false;
 function flee() {
   fleeAttempted = true;
   if (character.ctype === 'rogue' && (!parent.next_skill.invis ||
@@ -703,7 +705,9 @@ function attackLoop() {
     useAbilityOn(t);
   }
   if (t && party.includes(t.name) && character.ctype === 'priest') {
-    heal(t);
+    if (t.hp / t.max_hp <= healAt) {
+      heal(t);
+    }
   } else if (t && !t.dead && !t.rip && in_attack_range(t)) {
     attack(t);
   }
@@ -841,6 +845,10 @@ function main() { // move and attack code
   if (fledSuccess() || 
         strongEnemy && new Date() - strongEnemy > 60000) {
     fleeAttempted = false;
+  }
+  if (rvr) {
+    flee();
+    rvr = false;
   }
   var target = get_target();
   if (target && (target.dead || target.rip)) {
