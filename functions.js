@@ -350,8 +350,8 @@ var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
 var wait = false;
 function uceItem() {
   if (!autoUCE || wait || character.map === 'bank' || 
-      (character.ctype === 'warrior' && character.slots['offhand'] === null || 
-      character.slots['offhand'].name === 'shield')) {
+      (character.ctype === 'warrior' && (character.slots['offhand'] === null || 
+      character.slots['offhand'].name === 'shield'))) {
     return;
   }
   function correctScroll(item) {
