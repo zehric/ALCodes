@@ -291,7 +291,6 @@ function potions() {
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
       parent.G.monsters[t.mtype].range) + 25) {
-    console.log(t.mtype || t.name);
     if (character.afk) {
       show_json('Fled from ' + (t.mtype || t.name));
     }
@@ -611,7 +610,7 @@ function doPVP(targets) {
       healPlayer(injured);
     } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
         !fleeAttempted && !fledSuccess() || 
-        (character.hp / character.max_hp < 0.5 && allies.length < 2)) {
+        (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr) {
       strongEnemy = new Date();
       rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
       flee();
@@ -636,6 +635,9 @@ function flee() {
   if (character.ctype === 'rogue' && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
     invis();
+    if (rvr) {
+      parent.socket.emit('transport', {to: 'jail'});
+    }
   } else {
     parent.socket.emit('transport', {to: 'jail'});
   }
@@ -845,9 +847,6 @@ function main() { // move and attack code
   if (fledSuccess() || 
         strongEnemy && new Date() - strongEnemy > 60000) {
     fleeAttempted = false;
-  }
-  if (rvr) {
-    flee();
     rvr = false;
   }
   var target = get_target();
