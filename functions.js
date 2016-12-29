@@ -837,7 +837,8 @@ function equipShield() {
 }
 
 function equipWeapon() {
-  if (character.slots['offhand'] !== null) {
+  if (character.slots['offhand'] !== null && 
+      character.slots['offhand'].name === 'shield') {
     parent.socket.emit('unequip', {slot: 'offhand'});
   }
   if (character.slots['offhand'] === null) {
