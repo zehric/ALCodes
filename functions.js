@@ -159,7 +159,7 @@ function canRangeMove(target) {
     rangeAdjust = 0;
   }
   rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
-  rangeAdjust = (target.type === 'character') ? rangeAdjust * 2: rangeAdjust;
+  rangeAdjust = (target.type === 'character') ? rangeAdjust * 4: rangeAdjust;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
@@ -182,7 +182,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     wkr = wallKiteRange;
   }
   if (character.range <= 50) {
-    dist -= character.range;
+    dist += character.range;
   }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
@@ -728,7 +728,7 @@ function attackLoop() {
   if (!t || t.dead || t.rip || 
       character.invis && strongEnemy && new Date() - strongEnemy <= 60000 && 
         !fleeAttempted ||
-      character.invis && character.hp / character.max_hp < 0.9) {
+      character.invis && character.max_hp - character.hp >= useHP) {
     return;
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
