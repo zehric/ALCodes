@@ -159,6 +159,7 @@ function canRangeMove(target) {
     rangeAdjust = 0;
   }
   rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
+  rangeAdjust = (target.type === 'character') ? rangeAdjust * 2: rangeAdjust;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
@@ -686,7 +687,6 @@ function attackPlayer(player) {
       change_target(player);
       if (character.ctype === 'warrior') {
         charge();
-        equipShield();
       }
       rangeMove(distParams.dist, distParams.theta, false, true);
     } else {
@@ -694,9 +694,6 @@ function attackPlayer(player) {
     }
   } else if (!player.rip) {
     change_target(player);
-    if (character.ctype === 'warrior') {
-      equipWeapon();
-    }
     if (character.range > player.range) {
       rangeMove(distParams.dist, distParams.theta, true, true);
     }
@@ -838,14 +835,24 @@ function equipWeapon() {
   if (character.slots['offhand'] !== null && 
       character.slots['offhand'].name === 'shield') {
     parent.socket.emit('unequip', {slot: 'offhand'});
-  }
-  if (character.slots['offhand'] === null) {
+  } else if (character.slots['offhand'] === null) {
     for (let i = character.items.length; i >= 0; i--) {
       if (character.items[i] && character.items[i].name === 'blade' &&
           character.items[i].level >= 8) {
         equip(i);
       }
     }
+  }
+}
+
+function equipLoop() {
+  var t = get_target();
+  if (!t || t.dead || t.rip || party.includes(t) || character.rip) return;
+  if (!parent.next_attack || parent.next_attack - new Date() <= 400 && 
+      in_attack_range(t)) {
+    equipWeapon();
+  } else {
+    equipShield();
   }
 }
 
@@ -912,3 +919,6 @@ function main() { // move and attack code
 setCorrectingInterval(uceItem, 1000);
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
 setCorrectingInterval(main, loopInterval);
+if (character.ctype === 'warrior') {
+  setCorrectingInterval(equipLoop, 100);
+}
