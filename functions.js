@@ -38,10 +38,13 @@ function keybindings(e) {
     parent.socket.emit('transport', {to: 'jail'});
   } else if (e.keyCode === 221) {
     attackMonsterToggle = !attackMonsterToggle;
+    game_log('Attack monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 219) {
     kite = !kite;
+    game_log('Kite: ' + kite);
   } else if (e.keyCode === 187) {
     alwaysAttackTargeted = !alwaysAttackTargeted;
+    game_log('Manual Targeting: ' + alwaysAttackTargeted);
   }
 }
 
@@ -903,8 +906,6 @@ function main() { // move and attack code
     attackPlayer(target);
   } else if (attackMonsterToggle) {
     attackMonster(target);
-  } else {
-    set_message('No targets.');
   }
 }
 
