@@ -451,6 +451,7 @@ function uceItem() {
   if (emptySlots.length === 0) {
     return;
   }
+  var gc = 0;
   for (let item in toUpgrades) { // buy items and add to scrolls
     let index = toUpgrades[item];
     let s;
@@ -458,6 +459,7 @@ function uceItem() {
       if (character.gold >= parent.G.items[item].g) {
         toUpgrades[item] = emptySlots.shift();
         buy(item, 1);
+        gc += parent.G.items[item].g;
         s = 'scroll0';
       } else {
         delete toUpgrades[item];
@@ -465,13 +467,13 @@ function uceItem() {
     } else {
       s = correctScroll(character.items[index]);
     }
-    if (s && !scrolls[s] && character.gold >= parent.G.items[s].g) {
+    if (s && !scrolls[s] && character.gold >= parent.G.items[s].g + gc) {
       scrolls[s] = [null, 1];
     } else if (s && scrolls[s] && (scrolls[s][0] !== null && 
         character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) ||
+          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) + gc ||
         scrolls[s][0] === null && 
-          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1))) {
+          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1) + gc)) {
       scrolls[s][1] += 1;
     } else {
       delete toUpgrades[item];
@@ -698,7 +700,8 @@ function attackMonster(target) {
 function attackLoop() {
   var t = get_target();
   if (!t || t.dead || t.rip || 
-      strongEnemy && new Date() - strongEnemy <= 60000 && !fleeAttempted) {
+      strongEnemy && new Date() - strongEnemy <= 60000 && !fleeAttempted ||
+      character.invis && character.hp / character.max_hp < 0.9) {
     return;
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
