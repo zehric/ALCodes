@@ -159,7 +159,7 @@ function canRangeMove(target) {
     rangeAdjust = 0;
   }
   rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
-  rangeAdjust = (target.type === 'character') ? rangeAdjust * 4: rangeAdjust;
+  rangeAdjust = (target.type === 'character') ? rangeAdjust * 5 : rangeAdjust;
   var dist = Math.ceil(vec.length - character.range + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
@@ -864,7 +864,6 @@ function equipLoop() {
 function supershot(target) {
   if ((!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) && character.mp >= 400) {
-    lastsupershot = new Date();
     buy('mpot0', 1);
     parent.socket.emit("ability", {
       name: "supershot",
