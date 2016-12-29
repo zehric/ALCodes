@@ -150,17 +150,17 @@ function canRangeMove(target) {
   var vec = vector(closestPoints(character, target));
   var theta = vec.theta;
   var rangeAdjust;
+  var phi = target.angle * Math.PI / 180 - theta;
+  var vc = character.speed;
+  var vt = target.speed;
+  var d = vec.length - character.range;
   if (target.moving) {
-    rangeAdjust = (character.speed / (character.speed + target.speed)) *
-      (Math.cos(target.angle * Math.PI / 180 - theta) * 
-        target.speed * (loopInterval / 1000) -
-      (target.speed / character.speed) * (vec.length - character.range));
+    rangeAdjust = (vc * vt * Math.cos(phi) * ((loopInterval / 1000) + 
+      (d / vc))) / (vc - vt * Math.cos(phi));
   } else {
     rangeAdjust = 0;
   }
-  rangeAdjust = (target.speed >= 30 || rangeAdjust > 0) ? rangeAdjust : 0;
-  rangeAdjust = (target.speed >= 40) ? rangeAdjust * 5 : rangeAdjust;
-  var dist = Math.ceil(vec.length - character.range + rangeAdjust);
+  var dist = Math.ceil(d + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   return {
