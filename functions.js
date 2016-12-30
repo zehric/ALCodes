@@ -972,6 +972,10 @@ var currentMap;
 var graph;
 var currentPath;
 function pathfind(x, y) {
+  if (xBoundaries.length && (x < xBoundaries[0] || x > xBoundaries[1]) ||
+      yBoundaries.length && (y < yBoundaries[0] || y > yBoundaries[1])) {
+    return null;
+  }
   if (!currentMap || currentMap !== character.map) {
     currentMap = character.map;
     graph = initialize_graph(character.map);
