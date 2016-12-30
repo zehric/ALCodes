@@ -735,6 +735,9 @@ function attackMonster(target) {
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
+    if (lastPos) {
+      currentPath = pathfind(lastPos[0], lastPos[1]);
+    }
   } else {
     set_message('Attacking ' + target.mtype);
     change_target(target);
