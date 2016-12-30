@@ -614,7 +614,7 @@ function doPVP(targets) {
   var enemies = targets.enemies;
   var injured;
   if (enemies.length > allies.length && !fleeAttempted && 
-      character.map !== 'jail') {
+      !fledSuccess() && !alwaysFight) {
     strongEnemy = new Date();
     flee();
     if (character.afk) {
@@ -642,9 +642,10 @@ function doPVP(targets) {
     }
     if (injured) {
       healPlayer(injured);
-    } else if (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
+    } else if (!alwaysFight && 
+        (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
         !fleeAttempted && !fledSuccess() || 
-        (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr) {
+        (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr)) {
       strongEnemy = new Date();
       rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
       flee();

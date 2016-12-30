@@ -1,6 +1,7 @@
 /* General Config */
 doAttack = character.ctype !== 'merchant';
 kite = character.range > 50 && true; // false to manually override no kiting
+alwaysFight = false; // always fight in PvP, no matter the odds
 
 wallKiteRange = 100; // stay this distance away from walls when kiting
 
