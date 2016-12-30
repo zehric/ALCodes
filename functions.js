@@ -651,7 +651,7 @@ function doPVP(targets) {
         return e.name;
       }));
     }
-  } else if (!can_move_to(nearestEnemy) && 
+  } else if (!alwaysFight && !can_move_to(nearestEnemy) && 
       parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
     if (targets.target.type === 'monster') {
       attackMonster(targets.target);
