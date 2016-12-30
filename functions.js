@@ -294,6 +294,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
     if ((!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
+        parent.distance(character, current) <= maxMonsterDistance &&
         (!xBoundaries.length || cx >= xBoundaries[0] && cy <= xBoundaries[1]) &&
         (!yBoundaries.length || cy >= yBoundaries[0] && cy <= yBoundaries[1]) &&
         (!target || !priorityMonsters.includes(target.mtype)) &&

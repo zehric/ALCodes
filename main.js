@@ -35,6 +35,7 @@ buyMPPotAt = 100;
 useAbilities = false; // in pve
 maxMonsterHP = 5000;
 minMonsterXP = 500;
+maxMonsterDistance = Infinity; 
 
 // use for strong mobs that need a party to kill, in no particular order
 priorityMonsters = ['mvampire'];
