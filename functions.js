@@ -324,7 +324,7 @@ function potions() {
     if (character.afk) {
       show_json('Fled from ' + (t.mtype || t.name));
     }
-    set_message('Fled from ' + (t.mtype || t.name));
+    game_log('Fled from ' + (t.mtype || t.name));
     flee();
   }
   if (character.mp < character.mp_cost && !hasMPPot1) {
@@ -608,61 +608,54 @@ var strongEnemy;
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
-  if (enemies.length > allies.length && !fleeAttempted && 
-      !fledSuccess() && !alwaysFight) {
+  var strongestEnemy = nearestEnemy = enemies[0];
+  var strongestAlly = allies[0];
+  var injured;
+  for (let enemy of enemies) {
+    if (playerStrength(enemy) > playerStrength(strongestEnemy)) {
+      strongestEnemy = enemy;
+    }
+    if (parent.distance(character, enemy) < 
+        parent.distance(character, nearestEnemey)) {
+      nearestEnemy = enemy;
+    }
+  }
+  for (let ally of allies) {
+    if (playerStrength(ally) > playerStrength(strongestAlly)) {
+      strongestAlly = ally;
+    }
+    if (character.ctype === 'priest' && ally.hp / ally.max_hp < healAt &&
+        (!injured || ally.hp / ally.max_hp < injured.hp / injured.max_hp)) {
+      injured = ally;
+    }
+  }
+  if (injured) {
+    healPlayer(injured);
+  } else if (!alwaysFight && (can_move_to(nearestEnemy) ||
+        parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) &&
+      (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
+      !fleeAttempted && !fledSuccess() || enemies.length > allies.length ||
+      (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr)) {
     strongEnemy = new Date();
+    rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
     flee();
+    game_log('Fled from ' + enemies.map(function (e) {
+      return e.name;
+    }));
     if (character.afk) {
-      show_json('Too many enemies: ' + enemies.map(function (e) {
+      show_json('Fled from ' + enemies.map(function (e) {
         return e.name;
       }));
     }
-    set_message('Too many enemies');      
   } else {
-    var strongestEnemy = nearestEnemy = enemies[0];
-    var strongestAlly = allies[0];
-    var injured;
-    for (let enemy of enemies) {
-      if (playerStrength(enemy) > playerStrength(strongestEnemy)) {
-        strongestEnemy = enemy;
-      }
-      if (parent.distance(character, enemy) < 
-          parent.distance(character, nearestEnemey)) {
-        nearestEnemy = enemy;
-      }
-    }
-    for (let ally of allies) {
-      if (playerStrength(ally) > playerStrength(strongestAlly)) {
-        strongestAlly = ally;
-      }
-      if (character.ctype === 'priest' && ally.hp / ally.max_hp < healAt &&
-          (!injured || ally.hp / ally.max_hp < injured.hp / injured.max_hp)) {
-        injured = ally;
-      }
-    }
-    if (injured) {
-      healPlayer(injured);
-    } else if (!alwaysFight && 
-        (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
-        !fleeAttempted && !fledSuccess() || 
-        (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr)) {
-      strongEnemy = new Date();
-      rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
-      flee();
-      set_message('Fled from ' + strongestEnemy.name);
-      if (character.afk) {
-        show_json('Fled from ' + strongestEnemy.name);
-      }
-    } else {
-      if (!nearestEnemy.invincible) {
-        attackPlayer(nearestEnemy);
-      } else if (!strongestEnemy.invincible) {
-        attackPlayer(strongestEnemy);
-      } else if (enemies.length > 2) {
-        for (let enemy of enemies) {
-          if (!enemy.invincible) {
-            attackPlayer(enemy);
-          }
+    if (!nearestEnemy.invincible) {
+      attackPlayer(nearestEnemy);
+    } else if (!strongestEnemy.invincible) {
+      attackPlayer(strongestEnemy);
+    } else if (enemies.length > 2) {
+      for (let enemy of enemies) {
+        if (!enemy.invincible) {
+          attackPlayer(enemy);
         }
       }
     }
