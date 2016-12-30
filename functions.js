@@ -940,14 +940,15 @@ function tpBack() {
     parent.socket.emit('transport', {to: lastMap});
   }
   if (leftSuccess && character.map === lastMap && lastPos) {
+    var temp = lastPos;
+    lastPos = null;
     setTimeout(function () {
-      var x = lastPos[0], y = lastPos[1];
+      var x = temp[0], y = temp[1];
       if (can_move_to(x, y)) {
         move(x, y)
       } else {
         currentPath = pathfind(x, y);
       }
-      lastPos = null;
     }, 200);
     leftSuccess = false;
   }
