@@ -156,8 +156,8 @@ function canRangeMove(target) {
   var d = vec.length - character.range;
   // var time = 0.1 + d / vc;
   if (target.moving) {
-    rangeAdjust = (vc * vt * (Math.abs(Math.cos(phi)) * 0.1 + 
-      Math.cos(phi) * (d/vc))) / (vc - vt * Math.cos(phi));
+    rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
+      d / vc)) / (vc - vt * Math.cos(phi));
   } else {
     rangeAdjust = 0;
   }
