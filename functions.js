@@ -702,6 +702,7 @@ function flee() {
   if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
       new Date() <= parent.next_skill.invis) {
     lastPos = [character.real_x, character.real_y];
+    lastMap = character.map;
     parent.socket.emit('transport', {to: 'jail'});
   }
   if (character.ctype === 'rogue' && (!parent.next_skill.invis || 
@@ -721,11 +722,13 @@ function attackPlayer(player) {
       }
       if (!lastPos) {
         lastPos = [character.real_x, character.real_y];
+        lastMap = character.map;
       }
       rangeMove(distParams.dist, distParams.theta, false, true);
     } else if (!currentPath) {
       if (!lastPos) {
         lastPos = [character.real_x, character.real_y];
+        lastMap = character.map;
       }
       currentPath = pathfind(player.real_x, player.real_y);
     }
@@ -740,7 +743,7 @@ function attackMonster(target) {
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
-    if (lastPos) {
+    if (lastPos && character.map === lastMap) {
       currentPath = pathfind(lastPos[0], lastPos[1]);
     }
   } else {
@@ -930,7 +933,8 @@ function tpBack() {
   if (!fledSuccess() && (!lastMap || lastMap !== character.map)) {
     lastMap = character.map;
   }
-  if (!goBack) return;
+  if (!goBack || character.invis || parent.next_skill.invis && 
+      new Date() < parent.next_skill.invis) return;
   if (fledSuccess() && lastMap && 
       (!strongEnemy || new Date() - strongEnemy > 60000)) {
     parent.socket.emit('leave');
