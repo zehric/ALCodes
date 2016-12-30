@@ -636,7 +636,7 @@ function doPVP(targets) {
   if (injured) {
     healPlayer(injured);
   } else if (!alwaysFight && (can_move_to(nearestEnemy) ||
-        parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) &&
+        parent.distance(character, nearestEnemy) <= nearestEnemy.range + 150) &&
       (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
       !fleeAttempted && !fledSuccess() || enemies.length > allies.length ||
       (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr)) {
@@ -651,6 +651,9 @@ function doPVP(targets) {
         return e.name;
       }));
     }
+  } else if (!can_move_to(nearestEnemy) && 
+      parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
+    attackMonster(targets.monster);
   } else {
     if (!nearestEnemy.invincible) {
       attackPlayer(nearestEnemy);
@@ -958,6 +961,7 @@ function main() { // move and attack code
     }
     rvr = false;
   }
+  tpBack();
   if (currentPath) {
     pathfindMove(currentPath);
   }
