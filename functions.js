@@ -43,6 +43,8 @@ function keybindings(e) {
   } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
+    goBack = false;
+    game_log('Auto TP Back Disabled. Reenable with -');
     parent.socket.emit('transport', {to: 'jail'});
   } else if (e.keyCode === 221) {
     attackMonsterToggle = !attackMonsterToggle;
@@ -848,12 +850,12 @@ function burst(target) {
 
 function supershot(target) {
   if ((!parent.next_skill.supershot || 
-    new Date() > parent.next_skill.supershot) && character.mp >= 400) {
-      buy('mpot0', 1);
-      parent.socket.emit("ability", {
-        name: "supershot",
-        id: target.id
-      });
+      new Date() > parent.next_skill.supershot) && character.mp >= 400) {
+    buy('mpot0', 1);
+    parent.socket.emit("ability", {
+      name: "supershot",
+      id: target.id
+    });
   }
 }
 
