@@ -31,7 +31,8 @@ var attackMonsterToggle = true;
 var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {
-  if ($("input:focus").length > 0 || $("textarea:focus").length > 0 || 
+  if (parent.$("input:focus").length > 0 || 
+      parent.$("textarea:focus").length > 0 || 
       e.target && e.target.hasAttribute("contenteditable")) {
     if (!(e.keyCode == 27 && window.character)) {
       return;
@@ -713,8 +714,14 @@ function attackPlayer(player) {
       if (character.ctype === 'warrior') {
         charge();
       }
+      if (!lastPos) {
+        lastPos = [character.real_x, character.real_y];
+      }
       rangeMove(distParams.dist, distParams.theta, false, true);
     } else if (!currentPath) {
+      if (!lastPos) {
+        lastPos = [character.real_x, character.real_y];
+      }
       currentPath = pathfind(player.real_x, player.real_y);
     }
   } else if (!player.rip) {
@@ -932,6 +939,7 @@ function tpBack() {
       } else {
         currentPath = pathfind(x, y);
       }
+      lastPos = null;
     }, 200);
     leftSuccess = false;
   }
