@@ -801,7 +801,7 @@ function attackLoop() {
 }
 
 function useAbilityOn(target) {
-  if (character.ctype === 'rogue') {
+  if (character.ctype === 'rogue' && in_attack_range(target)) {
     invis();
   } else if (!target || target.dead || target.rip) {
     return;
