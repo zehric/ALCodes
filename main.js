@@ -54,4 +54,8 @@ loopAddition = function () {
 healAt = 0.7;
 pocket = ''; // who to follow when healing
 
-$.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
+$.getScript('https://cdn.rawgit.com/qiao/heap.js/master/lib/heap.js', function () {
+  $.getScript('https://rawgit.com/zehric/6bcb8e8963c74cc2b2b6dcc270d18411/raw/e308eb189755e0959bcfc386fa2cfbd36d5ea792/pathfinding.js', function () {
+    $.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
+  });
+});

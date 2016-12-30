@@ -154,7 +154,6 @@ function canRangeMove(target) {
   var vc = character.speed;
   var vt = target.speed;
   var d = vec.length - character.range;
-  // var time = 0.1 + d / vc;
   if (target.moving) {
     rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
       d / vc)) / (vc - vt * Math.cos(phi));
@@ -185,6 +184,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
+    currentPath = null;
     if (character.range <= 50 && !forceKite) {
       move(character.real_x + (dist + character.range) * Math.cos(theta),
            character.real_y + (dist + character.range) * Math.sin(theta));
@@ -231,8 +231,10 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     }
     lastAdjust = new Date();
     lastTheta = theta;
+    currentPath = null;
     move(newX, newY);
   } else if (kite || forceKite) {
+    currentPath = null;
     move(character.real_x + dist * Math.cos(lastTheta),
          character.real_y + dist * Math.sin(lastTheta));
   }
@@ -252,11 +254,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc && (canRangeMove(current).canMove || 
-            can_move_to(current) ||
-          parent.distance(character, current) <= current.range + 100 ||
-          (current.ctype === 'ranger' && 
-            parent.distance(character, current) <= 600))) {
+        !current.npc) {
       if (party.includes(current.name)) {
         allies.push(current);
       } else {
@@ -277,8 +275,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
         continue;
       }
     }
-    if ((canRangeMove(current).canMove || can_move_to(current)) && 
-        (!target || target.type !== 'character') &&
+    if ((!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         (!target || !priorityMonsters.includes(target.mtype)) &&
@@ -613,7 +610,6 @@ var strongEnemy;
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
-  var injured;
   if (enemies.length > allies.length && !fleeAttempted && 
       !fledSuccess() && !alwaysFight) {
     strongEnemy = new Date();
@@ -625,11 +621,16 @@ function doPVP(targets) {
     }
     set_message('Too many enemies');      
   } else {
-    var strongestEnemy = enemies[0];
+    var strongestEnemy = nearestEnemy = enemies[0];
     var strongestAlly = allies[0];
+    var injured;
     for (let enemy of enemies) {
       if (playerStrength(enemy) > playerStrength(strongestEnemy)) {
         strongestEnemy = enemy;
+      }
+      if (parent.distance(character, enemy) < 
+          parent.distance(character, nearestEnemey)) {
+        nearestEnemy = enemy;
       }
     }
     for (let ally of allies) {
@@ -654,8 +655,18 @@ function doPVP(targets) {
       if (character.afk) {
         show_json('Fled from ' + strongestEnemy.name);
       }
-    } else if (!strongestEnemy.invincible) {
-      attackPlayer(strongestEnemy);
+    } else {
+      if (!nearestEnemy.invincible) {
+        attackPlayer(nearestEnemy);
+      } else if (!strongestEnemy.invincible) {
+        attackPlayer(strongestEnemy);
+      } else if (enemies.length > 2) {
+        for (let enemy of enemies) {
+          if (!enemy.invincible) {
+            attackPlayer(enemy);
+          }
+        }
+      }
     }
   }
 }
@@ -681,26 +692,28 @@ function flee() {
 
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
-  if (character.ctype === 'rogue') {
-    invis();
-  }
-  if (character.ctype === 'ranger' && 
-      parent.distance(player, character) <= 600) {
-    supershot(player);
-  } 
+  change_target(player);
+  // if (character.ctype === 'rogue') {
+  //   invis();
+  // }
+  // if (character.ctype === 'ranger' && 
+  //     parent.distance(player, character) <= 600) {
+  //   supershot(player);
+  // } 
   var distParams = canRangeMove(player);
   if (!in_attack_range(player)) {
     if (distParams.canMove || can_move_to(player)) {
-      change_target(player);
       if (character.ctype === 'warrior') {
         charge();
       }
       rangeMove(distParams.dist, distParams.theta, false, true);
+    } else if (!currentPath) {
+      currentPath = pathfind(player.real_x, player.real_y);
+      pathfindMove();
     } else {
-      game_log('cannot move to player');
+      pathfindMove();
     }
   } else if (!player.rip) {
-    change_target(player);
     if (character.range > player.range) {
       rangeMove(distParams.dist, distParams.theta, true, true);
     }
@@ -709,21 +722,42 @@ function attackPlayer(player) {
 
 function attackMonster(target) {
   var distParams = canRangeMove(target);
-  if (!target || (!distParams.canMove && !can_move_to(target) && 
-      !in_attack_range(target) || target.dead)) {
+  if (!target || target.dead) {
     set_message('No monsters');
   } else {
-    if (character.ctype === 'ranger' && (useAbilities === true ||
-        useAbilities !== false && useAbilities <= target.max_hp)) {
-      supershot(target);
-    } 
+    // if (character.ctype === 'ranger' && (useAbilities === true ||
+    //     useAbilities !== false && useAbilities <= target.max_hp)) {
+    //   supershot(target);
+    // } 
     set_message('Attacking ' + target.mtype);
     change_target(target);
-    if (target && !target.dead && !target.rip) {
+    if (!distParams.canMove && !can_move_to(target) && 
+        !in_attack_range(target)) {
+      if (!currentPath) {
+        currentPath = pathfind(target.real_x, target.real_y);
+      }
+      pathfindMove();
+    } else if (target && !target.dead && !target.rip) {
+      currentPath = null;
       rangeMove(distParams.dist, distParams.theta, 
                 priorityMonsters.includes(target.mtype) && solo && 
                   character.range > 50);
     }
+  }
+}
+
+function healPlayer(player) {
+  set_message('Healing ' + player.name);
+  change_target(player);
+  var distParams = canRangeMove(player);
+  if (!distParams.canMove && !can_move_to(player) && !in_attack_range(player)) {
+    if (!currentPath) {
+      currentPath = pathfind(player.real_x, player.real_y);
+    }
+    pathfindMove();
+  } else if (player && !player.dead && !player.rip && 
+      !in_attack_range(player)) {
+    rangeMove(distParams.dist, distParams.theta);
   }
 }
 
@@ -740,7 +774,8 @@ function attackLoop() {
         useAbilities !== false && useAbilities <= t.max_hp)) {
     useAbilityOn(t);
   }
-  if (t && party.includes(t.name) && character.ctype === 'priest') {
+  if (t && party.includes(t.name) && character.ctype === 'priest' && 
+      in_attack_range(t)) {
     if (t.hp / t.max_hp <= healAt) {
       heal(t);
     }
@@ -763,15 +798,6 @@ function useAbilityOn(target) {
     curse(target);
   } else if (character.ctype === 'mage') {
     burst(target);
-  }
-}
-
-function healPlayer(target) {
-  set_message('Healing ' + target.name);
-  change_target(target);
-  var distParams = canRangeMove(target);
-  if (!in_attack_range(target) && (distParams.canMove || can_move_to(target))) {
-    rangeMove(distParams.dist, distParams.theta);
   }
 }
 
@@ -804,6 +830,17 @@ function burst(target) {
       name: "burst",
       id: target.id
     });
+  }
+}
+
+function supershot(target) {
+  if ((!parent.next_skill.supershot || 
+    new Date() > parent.next_skill.supershot) && character.mp >= 400) {
+      buy('mpot0', 1);
+      parent.socket.emit("ability", {
+        name: "supershot",
+        id: target.id
+      });
   }
 }
 
@@ -863,17 +900,6 @@ function equipLoop() {
   }
 }
 
-function supershot(target) {
-  if ((!parent.next_skill.supershot || 
-      new Date() > parent.next_skill.supershot) && character.mp >= 400) {
-    buy('mpot0', 1);
-    parent.socket.emit("ability", {
-      name: "supershot",
-      id: target.id
-    });
-  }
-}
-
 function chainMove(xs, ys) {
   var xIdx = xs.indexOf(character.real_x);
   var yIdx = ys.indexOf(character.real_y);
@@ -881,6 +907,29 @@ function chainMove(xs, ys) {
       yIdx < ys.length - 1 && xIdx === yIdx) {
     move(xs[xIdx + 1], ys[yIdx + 1]);
   }
+}
+
+function pathfindMove() {
+  if (!currentPath.length) {
+    return;
+  }
+  if (can_move_to(currentPath[0].x, currentPath[0].y)) {
+    var point = currentPath.shift();
+    move(point.x, point.y);
+  }
+}
+
+var currentMap;
+var graph;
+var currentPath;
+function pathfind(x, y) {
+  if (!currentMap || currentMap !== character.map) {
+    currentMap = character.map;
+    graph = initialize_graph(character.map);
+  }
+  var from = graph.get(character.real_x, character.real_y);
+  var to = graph.get(x, y);
+  return find_path(from, to);
 }
 
 function main() { // move and attack code
