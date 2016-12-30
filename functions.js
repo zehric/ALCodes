@@ -698,7 +698,7 @@ var fleeAttempted = false;
 var rvr = false;
 var lastPos;
 function flee() {
-  fleeAttempted = !rvr;
+  fleeAttempted = rvr && !character.invis;
   if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
       new Date() <= parent.next_skill.invis) {
     lastPos = [character.real_x, character.real_y];
