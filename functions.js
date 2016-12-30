@@ -299,7 +299,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   }
   if (enemies.length !== 0) {
     allies.push(character);
-    return { players: true, allies: allies, enemies: enemies };
+    return {players: true, allies: allies, enemies: enemies, target: current};
   }
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
@@ -653,7 +653,9 @@ function doPVP(targets) {
     }
   } else if (!can_move_to(nearestEnemy) && 
       parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
-    attackMonster(targets.monster);
+    if (targets.target.type === 'monster') {
+      attackMonster(targets.target);
+    }
   } else {
     if (!nearestEnemy.invincible) {
       attackPlayer(nearestEnemy);
@@ -692,13 +694,6 @@ function flee() {
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
   change_target(player);
-  // if (character.ctype === 'rogue') {
-  //   invis();
-  // }
-  // if (character.ctype === 'ranger' && 
-  //     parent.distance(player, character) <= 600) {
-  //   supershot(player);
-  // } 
   var distParams = canRangeMove(player);
   if (!in_attack_range(player)) {
     if (distParams.canMove || can_move_to(player)) {
@@ -721,10 +716,6 @@ function attackMonster(target) {
   if (!target || target.dead) {
     set_message('No monsters');
   } else {
-    // if (character.ctype === 'ranger' && (useAbilities === true ||
-    //     useAbilities !== false && useAbilities <= target.max_hp)) {
-    //   supershot(target);
-    // } 
     set_message('Attacking ' + target.mtype);
     change_target(target);
     if (!distParams.canMove && !can_move_to(target) && 
@@ -908,15 +899,16 @@ function chainMove(xs, ys) {
 var lastMap;
 var leftSuccess = false;
 function tpBack() {
-  if (!lastMap || lastMap !== character.map) {
+  if (!fledSuccess() && (!lastMap || lastMap !== character.map)) {
     lastMap = character.map;
   }
   if (!goBack) return;
-  if (fledSuccess() && (!strongEnemy || new Date() - strongEnemy > 60000)) {
+  if (fledSuccess() && lastMap && 
+      (!strongEnemy || new Date() - strongEnemy > 60000)) {
     parent.socket.emit('transport', {to: lastMap});
     leftSuccess = true;
   }
-  if (leftSuccess) {
+  if (leftSuccess && lastPos) {
     currentPath = pathfind(lastPos[0], lastPos[1]);
     leftSuccess = false;
   }
