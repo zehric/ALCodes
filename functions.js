@@ -32,8 +32,8 @@ var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {
   if ($("input:focus").length > 0 || $("textarea:focus").length > 0 || 
-      a.target && a.target.hasAttribute("contenteditable")) {
-    if (!(a.keyCode == 27 && window.character)) {
+      e.target && e.target.hasAttribute("contenteditable")) {
+    if (!(e.keyCode == 27 && window.character)) {
       return;
     }
   }
@@ -764,7 +764,7 @@ function attackLoop() {
   if (!t || t.dead || t.rip || 
       character.invis && strongEnemy && new Date() - strongEnemy <= 60000 && 
         !fleeAttempted ||
-      character.invis && character.max_hp - character.hp >= useHP) {
+      character.invis && character.max_hp - character.hp > useHP) {
     return;
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
