@@ -664,7 +664,10 @@ function doPVP(targets) {
     }
   } else if (!alwaysFight && !can_move_to(nearestEnemy) && 
       parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
-    if (targets.target.type === 'monster') {
+    if (targets.target && party.includes(targets.target.name)) {
+      healPlayer(targets.target);
+    }
+    if (targets.target && targets.target.type === 'monster') {
       attackMonster(targets.target);
       game_log('Nearby enemies: ' + enemies.map(function (e) {
         return e.name;
