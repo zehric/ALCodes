@@ -290,9 +290,12 @@ function searchTargets(maxHP, minXP, currentTarget) {
         continue;
       }
     }
+    var cx = current.real_x, cy = current.real_y;
     if ((!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
+        (!xBoundaries.length || cx >= xBoundaries[0] && cy <= xBoundaries[1]) &&
+        (!yBoundaries.length || cy >= yBoundaries[0] && cy <= yBoundaries[1]) &&
         (!target || !priorityMonsters.includes(target.mtype)) &&
         current.max_hp <= maxHP && current.xp >= minXP && 
         ((target === null || 
@@ -972,10 +975,6 @@ var currentMap;
 var graph;
 var currentPath;
 function pathfind(x, y) {
-  if (xBoundaries.length && (x < xBoundaries[0] || x > xBoundaries[1]) ||
-      yBoundaries.length && (y < yBoundaries[0] || y > yBoundaries[1])) {
-    return null;
-  }
   if (!currentMap || currentMap !== character.map) {
     currentMap = character.map;
     graph = initialize_graph(character.map);
