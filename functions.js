@@ -31,6 +31,12 @@ var attackMonsterToggle = true;
 var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {
+  if ($("input:focus").length > 0 || $("textarea:focus").length > 0 || 
+      a.target && a.target.hasAttribute("contenteditable")) {
+    if (!(a.keyCode == 27 && window.character)) {
+      return;
+    }
+  }
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
   } else if (e.keyCode === 16) {
@@ -57,6 +63,10 @@ parent.window.addEventListener('keydown', keybindings);
 on_destroy = function () {
   parent.window.removeEventListener('keydown', keybindings);
 };
+
+parent.map.on('mousedown', function () {
+  currentPath = null;
+});
 
 handle_death = function () {
   function getRandomInt(min, max) {
@@ -914,7 +924,7 @@ function tpBack() {
   if (leftSuccess) {
     parent.socket.emit('transport', {to: lastMap});
   }
-  if (leftSuccess && character.map === lastMap) {
+  if (leftSuccess && character.map === lastMap && lastPos) {
     setTimeout(function () {
       var x = lastPos[0], y = lastPos[1];
       if (can_move_to(x, y)) {
