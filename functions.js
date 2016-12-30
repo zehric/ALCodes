@@ -181,10 +181,10 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   } else {
     wkr = wallKiteRange;
   }
+  currentPath = null;
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
-    currentPath = null;
     if (character.range <= 50 && !forceKite) {
       move(character.real_x + (dist + character.range) * Math.cos(theta),
            character.real_y + (dist + character.range) * Math.sin(theta));
@@ -231,10 +231,8 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     }
     lastAdjust = new Date();
     lastTheta = theta;
-    currentPath = null;
     move(newX, newY);
   } else if (kite || forceKite) {
-    currentPath = null;
     move(character.real_x + dist * Math.cos(lastTheta),
          character.real_y + dist * Math.sin(lastTheta));
   }
@@ -709,9 +707,6 @@ function attackPlayer(player) {
       rangeMove(distParams.dist, distParams.theta, false, true);
     } else if (!currentPath) {
       currentPath = pathfind(player.real_x, player.real_y);
-      pathfindMove();
-    } else {
-      pathfindMove();
     }
   } else if (!player.rip) {
     if (character.range > player.range) {
@@ -736,7 +731,6 @@ function attackMonster(target) {
       if (!currentPath) {
         currentPath = pathfind(target.real_x, target.real_y);
       }
-      pathfindMove();
     } else if (target && !target.dead && !target.rip) {
       currentPath = null;
       rangeMove(distParams.dist, distParams.theta, 
@@ -754,7 +748,6 @@ function healPlayer(player) {
     if (!currentPath) {
       currentPath = pathfind(player.real_x, player.real_y);
     }
-    pathfindMove();
   } else if (player && !player.dead && !player.rip && 
       !in_attack_range(player)) {
     rangeMove(distParams.dist, distParams.theta);
@@ -776,11 +769,13 @@ function attackLoop() {
   }
   if (t && party.includes(t.name) && character.ctype === 'priest' && 
       in_attack_range(t)) {
+    currentPath = null;
     if (t.hp / t.max_hp <= healAt) {
       heal(t);
     }
   } else if (t && !t.dead && !t.rip && in_attack_range(t) && 
       !party.includes(t.name)) {
+    currentPath = null;
     attack(t);
   }
 }
@@ -947,6 +942,9 @@ function main() { // move and attack code
       change_target(get_nearest_monster());
     }
     rvr = false;
+  }
+  if (currentPath) {
+    pathfindMove(currentPath);
   }
   var target = get_target();
   if (target && (target.dead || target.rip)) {
