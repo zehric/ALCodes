@@ -29,6 +29,7 @@ window.setCorrectingInterval = (function(func, delay) {
 
 var attackMonsterToggle = true;
 var alwaysAttackTargeted = false;
+var goBack = true;
 function keybindings(e) {
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
@@ -45,6 +46,9 @@ function keybindings(e) {
   } else if (e.keyCode === 187) {
     alwaysAttackTargeted = !alwaysAttackTargeted;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
+  } else if (e.keyCode === 189) {
+    goBack = !goBack;
+    game_log('Auto TP Back: ' + goBack);
   }
 }
 
@@ -616,7 +620,7 @@ function doPVP(targets) {
       strongestEnemy = enemy;
     }
     if (parent.distance(character, enemy) < 
-        parent.distance(character, nearestEnemey)) {
+        parent.distance(character, nearestEnemy)) {
       nearestEnemy = enemy;
     }
   }
@@ -668,16 +672,17 @@ function fledSuccess() {
 
 var fleeAttempted = false;
 var rvr = false;
+var lastPos;
 function flee() {
-  fleeAttempted = true;
-  if (character.ctype === 'rogue' && (!parent.next_skill.invis ||
+  fleeAttempted = !rvr;
+  if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
+      new Date() <= parent.next_skill.invis) {
+    parent.socket.emit('transport', {to: 'jail'});
+    lastPos = [character.real_x, character.real_y];
+  }
+  if (character.ctype === 'rogue' && (!parent.next_skill.invis || 
       new Date() > parent.next_skill.invis)) {
     invis();
-    if (rvr) {
-      parent.socket.emit('transport', {to: 'jail'});
-    }
-  } else {
-    parent.socket.emit('transport', {to: 'jail'});
   }
 }
 
@@ -897,6 +902,23 @@ function chainMove(xs, ys) {
   }
 }
 
+var lastMap;
+var leftSuccess = false;
+function tpBack() {
+  if (!lastMap || lastMap !== character.map) {
+    lastMap = character.map;
+  }
+  if (!goBack) return;
+  if (fledSuccess() && (!strongEnemy || new Date() - strongEnemy > 60000)) {
+    parent.socket.emit('transport', {to: lastMap});
+    leftSuccess = true;
+  }
+  if (leftSuccess) {
+    currentPath = pathfind(lastPos[0], lastPos[1]);
+    leftSuccess = false;
+  }
+}
+
 function pathfindMove() {
   if (!currentPath.length) {
     return;
@@ -932,7 +954,7 @@ function main() { // move and attack code
         strongEnemy && new Date() - strongEnemy > 60000) {
     fleeAttempted = false;
     if (rvr) {
-      change_target(get_nearest_monster());
+      attackMonster(get_nearest_monster());
     }
     rvr = false;
   }
