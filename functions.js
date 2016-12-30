@@ -299,7 +299,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   }
   if (enemies.length !== 0) {
     allies.push(character);
-    return {players: true, allies: allies, enemies: enemies, target: current};
+    return {players: true, allies: allies, enemies: enemies, target: target};
   }
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
@@ -682,8 +682,8 @@ function flee() {
   fleeAttempted = !rvr;
   if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
       new Date() <= parent.next_skill.invis) {
-    parent.socket.emit('transport', {to: 'jail'});
     lastPos = [character.real_x, character.real_y];
+    parent.socket.emit('transport', {to: 'jail'});
   }
   if (character.ctype === 'rogue' && (!parent.next_skill.invis || 
       new Date() > parent.next_skill.invis)) {
@@ -896,8 +896,8 @@ function chainMove(xs, ys) {
   }
 }
 
-var lastMap;
 var leftSuccess = false;
+var lastMap;
 function tpBack() {
   if (!fledSuccess() && (!lastMap || lastMap !== character.map)) {
     lastMap = character.map;
@@ -905,11 +905,21 @@ function tpBack() {
   if (!goBack) return;
   if (fledSuccess() && lastMap && 
       (!strongEnemy || new Date() - strongEnemy > 60000)) {
-    parent.socket.emit('transport', {to: lastMap});
+    parent.socket.emit('leave');
     leftSuccess = true;
   }
-  if (leftSuccess && lastPos) {
-    currentPath = pathfind(lastPos[0], lastPos[1]);
+  if (leftSuccess) {
+    parent.socket.emit('transport', {to: lastMap});
+  }
+  if (leftSuccess && character.map === lastMap) {
+    setTimeout(function () {
+      var x = lastPos[0], y = lastPos[1];
+      if (can_move_to(x, y)) {
+        move(x, y)
+      } else {
+        currentPath = pathfind(x, y);
+      }
+    }, 200);
     leftSuccess = false;
   }
 }
