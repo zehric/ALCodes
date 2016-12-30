@@ -297,18 +297,18 @@ function searchTargets(maxHP, minXP, currentTarget) {
       character.hp / character.max_hp < target.hp / target.max_hp)) {
     return character;
   }
-  if (enemies.length !== 0) {
-    allies.push(character);
-    return {players: true, allies: allies, enemies: enemies, target: target};
-  }
   if (parent.pvp || character.ctype === 'priest') {
     if (currentTarget && !party.includes(currentTarget.name) &&
         (!target || !party.includes(target.name)) &&
         (!currentTarget.target || party.includes(currentTarget.target)) &&
         (parent.distance(currentTarget, character) <= character.range + 50 || 
           currentTarget.target === character.name)) {
-      return currentTarget;
+      target = currentTarget;
     }
+  }
+  if (enemies.length !== 0) {
+    allies.push(character);
+    return {players: true, allies: allies, enemies: enemies, target: target};
   }
   return target;
 }
@@ -655,6 +655,9 @@ function doPVP(targets) {
       parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
     if (targets.target.type === 'monster') {
       attackMonster(targets.target);
+      game_log('Nearby enemies: ' + enemies.map(function (e) {
+        return e.name;
+      }));
     }
   } else {
     if (!nearestEnemy.invincible) {
