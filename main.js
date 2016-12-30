@@ -16,7 +16,7 @@ upgradeItems = {
   'mittens': 6
 }; 
 
-// don't go past these coordinates when kiting
+// don't go past these coordinates when kiting or pathfinding towards a mob
 xBoundaries = []; 
 yBoundaries = []; 
 
