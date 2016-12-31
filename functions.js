@@ -117,290 +117,6 @@ for (let person of party) {
   }
 }
 
-function closestPoints(e1, e2) {
-  var w1 = ('awidth' in e1) ? e1.awidth : e1.width;
-  var h1 = ('aheight' in e1) ? e1.aheight : e1.height;
-  var x1 = ('real_x' in e1) ? e1.real_x : e1.x;
-  var y1 = ('real_y' in e1) ? e1.real_y : e1.y;
-  var w2 = ('awidth' in e2) ? e2.awidth : e2.width;
-  var h2 = ('aheight' in e2) ? e2.aheight : e2.height;
-  var x2 = ('real_x' in e2) ? e2.real_x : e2.x;
-  var y2 = ('real_y' in e2) ? e2.real_y : e2.y;
-  
-  var shortest = Infinity;
-  var points;
-
-  var box1 = [
-    { x: x1 - w1 / 2, y: y1 - h1 }, // upper left
-    { x: x1 + w1 / 2, y: y1 - h1 }, // upper right
-    { x: x1 - w1 / 2, y: y1 }, // lower left
-    { x: x1 + w1 / 2, y: y1 } // lower right
-  ];
-  var box2 = [
-    { x: x2 - w2 / 2, y: y2 - h2 },
-    { x: x2 + w2 / 2, y: y2 - h2 },
-    { x: x2 - w2 / 2, y: y2 },
-    { x: x2 + w2 / 2, y: y2 }
-  ];
-
-  box1.forEach(function (p1) {
-    box2.forEach(function (p2) {
-      let length = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      if (length < shortest) {
-        shortest = length;
-        points = [p1, p2];
-      }
-    });
-  });
-
-  if (box1[0].x <= box2[3].x && box2[0].x <= box1[3].x &&
-      box1[0].y <= box2[3].y && box2[0].y <= box1[3].y) {
-    points[1] = points[0];
-  }
-
-  return points;
-}
-
-function vector(points) {
-  var dX = points[1].x - points[0].x;
-  var dY = points[1].y - points[0].y;
-  return {
-    length: Math.hypot(dX, dY),
-    theta: Math.atan2(dY, dX)
-  };
-}
-
-function canRangeMove(target) {
-  if (!target || target.dead || target.rip) {
-    return false;
-  }
-  var vec = vector(closestPoints(character, target));
-  var theta = vec.theta;
-  var rangeAdjust;
-  var phi = target.angle * Math.PI / 180 - theta;
-  var vc = character.speed;
-  var vt = target.speed;
-  var d = vec.length - character.range;
-  if (target.moving) {
-    rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
-      d / vc)) / (vc + vt * Math.abs(Math.cos(phi)));
-  } else {
-    rangeAdjust = 0;
-  }
-  var dist = Math.ceil(d + rangeAdjust);
-  var newX = character.real_x + dist * Math.cos(theta);
-  var newY = character.real_y + dist * Math.sin(theta);
-  return {
-    dist: dist,
-    theta: theta,
-    canMove: can_move_to(newX, newY)
-  };
-}
-
-var lastTheta;
-var lastAdjust;
-var lastPlus;
-var lastMinus;
-function rangeMove(dist, theta, forceKite, isPVP) {
-  var wkr;
-  if (isPVP) {
-    wkr = 0;
-  } else {
-    wkr = wallKiteRange;
-  }
-  var newX = character.real_x + dist * Math.cos(theta);
-  var newY = character.real_y + dist * Math.sin(theta);
-  if (isPVP && character.range <= 50) {
-    move(character.real_x + (dist + character.range) * Math.cos(theta),
-         character.real_y + (dist + character.range) * Math.sin(theta));
-  } else if (dist > 0) {
-    currentPath = null;
-    move(newX, newY);
-  } else if ((kite || forceKite) && 
-      (!lastAdjust || new Date() - lastAdjust > 300)) {
-    currentPath = null;
-    var farX = character.real_x + (dist - wkr) * Math.cos(theta);
-    var farY = character.real_y + (dist - wkr) * Math.sin(theta);
-    var counter = 1;
-    while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) ||
-        (xBoundaries.length && (farX < xBoundaries[0] || 
-          farX > xBoundaries[1]) ||
-        (yBoundaries.length && (farY < yBoundaries[0] || 
-          farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6 &&
-        counter <= 127) {
-      if (!lastPlus && !lastMinus || 
-            new Date() - lastPlus > 1000 && new Date() - lastMinus > 1000) {
-        if (counter % 2 === 1) {
-          theta += 0.2 * counter;
-        } else {
-          theta -= 0.2 * counter;
-        }
-      } else if (lastPlus && new Date() - lastPlus <= 1000) {
-        counter++;
-        theta -= 0.2;
-      } else if (lastMinus && new Date() - lastMinus <= 1000) {
-        counter++;
-        theta += 0.2;
-      }
-      farX = character.real_x + (dist - wkr) * Math.cos(theta);
-      farY = character.real_y + (dist - wkr) * Math.sin(theta);
-      newX = character.real_x + 
-             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.cos(theta);
-      newY = character.real_y +
-             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.sin(theta);
-      counter++;
-    }
-    if (counter % 2 === 1) {
-      lastPlus = new Date();
-    } else {
-      lastMinus = new Date();
-    }
-    lastAdjust = new Date();
-    lastTheta = theta;
-    move(newX, newY);
-  } else if (kite || forceKite) {
-    currentPath = null;
-    move(character.real_x + dist * Math.cos(lastTheta),
-         character.real_y + dist * Math.sin(lastTheta));
-  }
-}
-
-function searchTargets(maxHP, minXP, currentTarget) {
-  if (currentTarget && !party.includes(currentTarget.name) && !parent.pvp &&
-        (!currentTarget.target || party.includes(currentTarget.target)) && 
-      character.ctype !== 'priest' && 
-      (parent.distance(currentTarget, character) <= character.range + 50 || 
-        currentTarget.target === character.name) || alwaysAttackTargeted) {
-    return currentTarget;
-  }
-  var target = null;
-  var enemies = [];
-  var allies = [];
-  for (let id in parent.entities) {
-    let current = parent.entities[id];
-    if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc) {
-      if (party.includes(current.name)) {
-        allies.push(current);
-      } else {
-        enemies.push(current);
-      }
-    }
-    if (character.ctype === 'priest' && current.type === 'character' &&
-        party.includes(current.name) && !current.rip &&
-        current.hp / current.max_hp < healAt &&
-        (!target || target.type !== 'character' || 
-          current.hp / current.max_hp < target.hp / target.max_hp)) {
-      target = current;
-    } else if (priorityMonsters.includes(current.mtype) && (!target ||
-        !party.includes(target.name))) {
-      if (tanks.includes(current.target) || solo) {
-        target = current;
-      } else {
-        continue;
-      }
-    }
-    var cx = current.real_x, cy = current.real_y;
-    if ((!target || target.type !== 'character') &&
-        (!current.target || party.includes(current.target)) &&
-        current.type === 'monster' && !current.dead && 
-        parent.distance(character, current) <= maxMonsterDistance &&
-        (!xBoundaries.length || cx >= xBoundaries[0] && cy <= xBoundaries[1]) &&
-        (!yBoundaries.length || cy >= yBoundaries[0] && cy <= yBoundaries[1]) &&
-        (!target || !priorityMonsters.includes(target.mtype)) &&
-        current.max_hp <= maxHP && current.xp >= minXP && 
-        ((target === null || 
-            current.xp / current.max_hp > target.xp / target.max_hp) ||
-        target.mtype === current.mtype &&
-            parent.distance(character, current) <
-                parent.distance(character, target))) {
-      target = current;
-    }
-  }
-  if (character.ctype === 'priest' && 
-      ((!target || target.type === 'monster') && 
-        character.hp / character.max_hp < healAt || target && 
-      target.type === 'character' &&
-      character.hp / character.max_hp < target.hp / target.max_hp)) {
-    return character;
-  }
-  if (parent.pvp || character.ctype === 'priest') {
-    if (currentTarget && !party.includes(currentTarget.name) &&
-        (!target || !party.includes(target.name)) &&
-        (!currentTarget.target || party.includes(currentTarget.target)) &&
-        (parent.distance(currentTarget, character) <= character.range + 50 || 
-          currentTarget.target === character.name)) {
-      target = currentTarget;
-    }
-  }
-  if (enemies.length !== 0) {
-    allies.push(character);
-    return {players: true, allies: allies, enemies: enemies, target: target};
-  }
-  return target;
-}
-
-var hasHPPot0 = false;
-var hasMPPot0 = false;
-var hasMPPot1 = false;
-function potions() {
-  if (character.rip) {
-    return;
-  }
-  var t = get_target();
-  var survive = willSurvive(t);
-  if (!survive && parent.distance(t, character) <= (t.range || 
-      parent.G.monsters[t.mtype].range) + 25) {
-    if (character.invis) {
-      set_message('Fled from ' + (t.mtype || t.name));
-    } else if (character.afk) {
-      show_json('Fled from ' + (t.mtype || t.name));
-    }
-    game_log('Fled from ' + (t.mtype || t.name));
-    flee(t);
-  }
-  if (character.mp < character.mp_cost && !hasMPPot1) {
-    hasMPPot1 = true;
-    buy('mpot1', 1);
-  } else if (character.mp < buyMPPotAt && !hasMPPot0 && !hasMPPot1) {
-    hasMPPot0 = true;
-    buy('mpot0', 1);
-  }
-  if (character.hp < buyHPPotAt && !hasHPPot0) {
-    hasHPPot0 = true;
-    buy('hpot0', 1);
-  }
-  if (new Date() > parent.next_potion) {
-    if (!survive && character.hp < character.max_hp) {
-      parent.use('hp');
-    } else if (character.mp < character.mp_cost) {
-      hasMPPot1 = false;
-      parent.use('mp');
-    } else if (character.max_hp - character.hp > useHP) {
-      hasHPPot0 = false;
-      parent.use('hp');
-    } else if (character.max_mp - character.mp > useMP) {
-      hasMPPot0 = false;
-      parent.use('mp');
-    }
-  }
-}
-
-function willSurvive(target) {
-  return !target || party.includes(target.name) || target.dead || target.rip ||
-    target.npc || target.ctype === 'merchant' || (target.type === 'monster' && 
-      (target.target !== character.name ||
-        (parent.G.monsters[target.mtype].damage_type === 'physical' &&
-          character.hp > target.attack * (1 - character.armor / 1000)) ||
-        (parent.G.monsters[target.mtype].damage_type === 'magical' &&
-          character.hp > target.attack * (1 - character.resistance / 1000)))) ||
-      (target.type === 'character' && (target.target !== character.id ||
-        (parent.G.classes[target.ctype].damage_type === 'physical' &&
-          character.hp > target.attack * (1 - character.armor / 1000)) ||
-        (parent.G.classes[target.ctype].damage_type === 'magical' &&
-          character.hp > target.attack * (1 - character.resistance / 1000))));
-}
-
 var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade', 
                'claw', 'staff'];
 var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
@@ -627,6 +343,318 @@ function uceItem() {
   }, 500);
 }
 
+function closestPoints(e1, e2) {
+  var w1 = ('awidth' in e1) ? e1.awidth : e1.width;
+  var h1 = ('aheight' in e1) ? e1.aheight : e1.height;
+  var x1 = ('real_x' in e1) ? e1.real_x : e1.x;
+  var y1 = ('real_y' in e1) ? e1.real_y : e1.y;
+  var w2 = ('awidth' in e2) ? e2.awidth : e2.width;
+  var h2 = ('aheight' in e2) ? e2.aheight : e2.height;
+  var x2 = ('real_x' in e2) ? e2.real_x : e2.x;
+  var y2 = ('real_y' in e2) ? e2.real_y : e2.y;
+  
+  var shortest = Infinity;
+  var points;
+
+  var box1 = [
+    { x: x1 - w1 / 2, y: y1 - h1 }, // upper left
+    { x: x1 + w1 / 2, y: y1 - h1 }, // upper right
+    { x: x1 - w1 / 2, y: y1 }, // lower left
+    { x: x1 + w1 / 2, y: y1 } // lower right
+  ];
+  var box2 = [
+    { x: x2 - w2 / 2, y: y2 - h2 },
+    { x: x2 + w2 / 2, y: y2 - h2 },
+    { x: x2 - w2 / 2, y: y2 },
+    { x: x2 + w2 / 2, y: y2 }
+  ];
+
+  box1.forEach(function (p1) {
+    box2.forEach(function (p2) {
+      let length = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      if (length < shortest) {
+        shortest = length;
+        points = [p1, p2];
+      }
+    });
+  });
+
+  if (box1[0].x <= box2[3].x && box2[0].x <= box1[3].x &&
+      box1[0].y <= box2[3].y && box2[0].y <= box1[3].y) {
+    points[1] = points[0];
+  }
+
+  return points;
+}
+
+function vector(points) {
+  var dX = points[1].x - points[0].x;
+  var dY = points[1].y - points[0].y;
+  return {
+    length: Math.hypot(dX, dY),
+    theta: Math.atan2(dY, dX)
+  };
+}
+
+function canRangeMove(target) {
+  if (!target || target.dead || target.rip) {
+    return false;
+  }
+  var vec = vector(closestPoints(character, target));
+  var theta = vec.theta;
+  var rangeAdjust;
+  var phi = target.angle * Math.PI / 180 - theta;
+  var vc = character.speed;
+  var vt = target.speed;
+  var d = vec.length - character.range;
+  if (target.moving) {
+    rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
+      d / vc)) / (vc + vt * Math.abs(Math.cos(phi)));
+  } else {
+    rangeAdjust = 0;
+  }
+  var dist = Math.ceil(d + rangeAdjust);
+  var newX = character.real_x + dist * Math.cos(theta);
+  var newY = character.real_y + dist * Math.sin(theta);
+  return {
+    dist: dist,
+    theta: theta,
+    canMove: can_move_to(newX, newY)
+  };
+}
+
+var lastTheta;
+var lastAdjust;
+var lastPlus;
+var lastMinus;
+function rangeMove(dist, theta, forceKite, isPVP) {
+  var wkr;
+  if (isPVP) {
+    wkr = 0;
+  } else {
+    wkr = wallKiteRange;
+  }
+  var newX = character.real_x + dist * Math.cos(theta);
+  var newY = character.real_y + dist * Math.sin(theta);
+  if (isPVP && character.range <= 50) {
+    move(character.real_x + (dist + character.range) * Math.cos(theta),
+         character.real_y + (dist + character.range) * Math.sin(theta));
+  } else if (dist > 0) {
+    currentPath = null;
+    move(newX, newY);
+  } else if ((kite || forceKite) && 
+      (!lastAdjust || new Date() - lastAdjust > 300)) {
+    currentPath = null;
+    var farX = character.real_x + (dist - wkr) * Math.cos(theta);
+    var farY = character.real_y + (dist - wkr) * Math.sin(theta);
+    var counter = 1;
+    while ((!can_move_to(farX, farY) || !can_move_to(newX, newY) ||
+        (xBoundaries.length && (farX < xBoundaries[0] || 
+          farX > xBoundaries[1]) ||
+        (yBoundaries.length && (farY < yBoundaries[0] || 
+          farY > yBoundaries[1])))) && theta <= 12.6 && theta >= -12.6 &&
+        counter <= 127) {
+      if (!lastPlus && !lastMinus || 
+            new Date() - lastPlus > 1000 && new Date() - lastMinus > 1000) {
+        if (counter % 2 === 1) {
+          theta += 0.2 * counter;
+        } else {
+          theta -= 0.2 * counter;
+        }
+      } else if (lastPlus && new Date() - lastPlus <= 1000) {
+        counter++;
+        theta -= 0.2;
+      } else if (lastMinus && new Date() - lastMinus <= 1000) {
+        counter++;
+        theta += 0.2;
+      }
+      farX = character.real_x + (dist - wkr) * Math.cos(theta);
+      farY = character.real_y + (dist - wkr) * Math.sin(theta);
+      newX = character.real_x + 
+             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.cos(theta);
+      newY = character.real_y +
+             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.sin(theta);
+      counter++;
+    }
+    if (counter % 2 === 1) {
+      lastPlus = new Date();
+    } else {
+      lastMinus = new Date();
+    }
+    lastAdjust = new Date();
+    lastTheta = theta;
+    move(newX, newY);
+  } else if (kite || forceKite) {
+    currentPath = null;
+    move(character.real_x + dist * Math.cos(lastTheta),
+         character.real_y + dist * Math.sin(lastTheta));
+  }
+}
+
+function searchTargets(maxHP, minXP, currentTarget) {
+  if (currentTarget && !party.includes(currentTarget.name) && !parent.pvp &&
+        (!currentTarget.target || party.includes(currentTarget.target)) && 
+      character.ctype !== 'priest' && 
+      (parent.distance(currentTarget, character) <= character.range + 50 || 
+        currentTarget.target === character.name) || alwaysAttackTargeted) {
+    return currentTarget;
+  }
+  var target = null;
+  var enemies = [];
+  var allies = [];
+  for (let id in parent.entities) {
+    let current = parent.entities[id];
+    if (parent.pvp && current.type === 'character' && !current.rip &&
+        !current.npc) {
+      if (party.includes(current.name)) {
+        allies.push(current);
+      } else {
+        enemies.push(current);
+      }
+    }
+    if (character.ctype === 'priest' && current.type === 'character' &&
+        party.includes(current.name) && !current.rip &&
+        current.hp / current.max_hp < healAt &&
+        (!target || target.type !== 'character' || 
+          current.hp / current.max_hp < target.hp / target.max_hp)) {
+      target = current;
+    } else if (priorityMonsters.includes(current.mtype) && (!target ||
+        !party.includes(target.name))) {
+      if (tanks.includes(current.target) || solo) {
+        target = current;
+      } else {
+        continue;
+      }
+    }
+    var cx = current.real_x, cy = current.real_y;
+    if ((!target || target.type !== 'character') &&
+        (!current.target || party.includes(current.target)) &&
+        current.type === 'monster' && !current.dead && 
+        parent.distance(character, current) <= maxMonsterDistance &&
+        (!xBoundaries.length || cx >= xBoundaries[0] && cy <= xBoundaries[1]) &&
+        (!yBoundaries.length || cy >= yBoundaries[0] && cy <= yBoundaries[1]) &&
+        (!target || !priorityMonsters.includes(target.mtype)) &&
+        current.max_hp <= maxHP && current.xp >= minXP && 
+        ((target === null || 
+            current.xp / current.max_hp > target.xp / target.max_hp) ||
+        target.mtype === current.mtype &&
+            parent.distance(character, current) <
+                parent.distance(character, target))) {
+      target = current;
+    }
+  }
+  if (character.ctype === 'priest' && 
+      ((!target || target.type === 'monster') && 
+        character.hp / character.max_hp < healAt || target && 
+      target.type === 'character' &&
+      character.hp / character.max_hp < target.hp / target.max_hp)) {
+    return character;
+  }
+  if (parent.pvp || character.ctype === 'priest') {
+    if (currentTarget && !party.includes(currentTarget.name) &&
+        (!target || !party.includes(target.name)) &&
+        (!currentTarget.target || party.includes(currentTarget.target)) &&
+        (parent.distance(currentTarget, character) <= character.range + 50 || 
+          currentTarget.target === character.name)) {
+      target = currentTarget;
+    }
+  }
+  if (enemies.length !== 0) {
+    allies.push(character);
+    return {players: true, allies: allies, enemies: enemies, target: target};
+  }
+  return target;
+}
+
+var keyItems = {
+  'hpot0': [],
+  'hpot1': [],
+  'mpot0': [],
+  'mpot1': [],
+  'shield': [],
+  'blade': []
+};
+function searchInv() {
+  for (let i = character.items.length - 1; i >= 0; i--) {
+    var item = character.items[i];
+    if (item.name in keyItems) {
+      keyItems[item.name].push({q: item.q, index: i, level: item.level});
+    }
+  }
+}
+
+function potions() {
+  if (character.rip) {
+    return;
+  }
+  var t = get_target();
+  var survive = willSurvive(t);
+  if (!survive && parent.distance(t, character) <= (t.range || 
+      parent.G.monsters[t.mtype].range) + 25) {
+    if (character.invis) {
+      set_message('Fled from ' + (t.mtype || t.name));
+    } else if (character.afk) {
+      show_json('Fled from ' + (t.mtype || t.name));
+    }
+    game_log('Fled from ' + (t.mtype || t.name));
+    flee(t);
+  }
+  if (t && !t.dead && !t.rip && t.type === 'character') {
+    if (keyItems.hpot1.length === 0) {
+      buy('hpot1', 2);
+    } else if (keyItems.hpot1.length === 1 && keyItems.hpot1[0].q < 2) {
+      buy('hpot1', 1);
+    }
+    if (keyItems.mpot1.length === 0) {
+      buy('mpot1', 2);
+    } else if (keyItems.mpot1.length === 1 && keyItems.mpot1[0].q < 2) {
+      buy('mpot1', 1);
+    }
+    if (character.mp < character.mp_cost + 50 && 
+        new Date() > parent.next_potion && keyItems.mpot1.length) {
+      use(keyItems.mpot1[0].index);
+    } else if (character.hp < character.max_hp - 250 && 
+        new Date() > parent.next_potion && keyItems.hpot1.length) {
+      use(keyItems.hpot1[0].index);
+    }
+  } else {
+    if (keyItems.hpot0.length === 0) {
+      buy('hpot0', 2);
+    } else if (keyItems.hpot0.length === 1 && keyItems.hpot0[0].q < 2) {
+      buy('hpot0', 1);
+    }
+    if (keyItems.mpot0.length === 0 && character.mp < useMP + 50) {
+      buy('mpot0', 1);
+    }
+    if (character.max_hp - character.hp > useHP && 
+        keyItems.hpot0.length && new Date() > parent.next_potion) {
+      use(keyItems.hpot0[0].index);
+    } else if (character.max_mp - character.mp > useMP &&
+        keyItems.mpot0.length && new Date() > parent.next_potion) {
+      use(keyItems.mpot0[0].index);
+    } else if (keyItems.mpot0.length === 0 &&
+        character.mp < character.max_mp - 100 &&
+        new Date() > parent.next_potion) {
+      parent.use('mp');
+    }
+  }
+}
+
+function willSurvive(target) {
+  return !target || party.includes(target.name) || target.dead || target.rip ||
+    target.npc || target.ctype === 'merchant' || (target.type === 'monster' && 
+      (target.target !== character.name ||
+        (parent.G.monsters[target.mtype].damage_type === 'physical' &&
+          character.hp > target.attack * (1 - character.armor / 1000)) ||
+        (parent.G.monsters[target.mtype].damage_type === 'magical' &&
+          character.hp > target.attack * (1 - character.resistance / 1000)))) ||
+      (target.type === 'character' && (target.target !== character.id ||
+        (parent.G.classes[target.ctype].damage_type === 'physical' &&
+          character.hp > target.attack * (1 - character.armor / 1000)) ||
+        (parent.G.classes[target.ctype].damage_type === 'magical' &&
+          character.hp > target.attack * (1 - character.resistance / 1000))));
+}
+
 function playerStrength(player) {
   return ((player.invis ? player.attack * 0.8 : player.attack) * 
       player.frequency) + player.armor +
@@ -721,9 +749,7 @@ function flee(entity) {
   if (!entity || entity.type === 'character' && entity.ctype === 'rogue' || 
     character.ctype !== 'rogue' || parent.next_skill.invis && 
     new Date() < parent.next_skill.invis) {
-    if (!lastPos) {
-      lastPos = [character.real_x, character.real_y];
-    }
+    lastPos = [character.real_x, character.real_y];
     lastMap = character.map;
     parent.socket.emit('transport', {to: 'jail'});
   } else if (entity.dead || entity.rip) {
@@ -735,14 +761,9 @@ function flee(entity) {
   }
 }
 
-var buypotcd;
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
   change_target(player);
-  if (!buypotcd || new Date() - buypotcd > 5000) {
-    buy('hpot1', 2);
-    buypotcd = new Date();
-  }
   var distParams = canRangeMove(player);
   if (!in_attack_range(player) && 
       (character.range <= 50 || player.range >= 50 ||
@@ -920,10 +941,10 @@ function charge() {
 function equipShield() {
   if (!character.slots['offhand'] || 
       character.slots['offhand'].name !== 'shield') {
-    for (let i = character.items.length; i >= 0; i--) {
-      if (character.items[i] && character.items[i].name === 'shield') {
-        equip(i);
-      }
+    if (keyItems.shield.length) {
+      equip(keyItems.shield.reduce(function (prev, curr) {
+        return prev.level > curr.level ? prev : curr;
+      }).index);
     }
   }
 }
@@ -933,11 +954,10 @@ function equipWeapon() {
       character.slots['offhand'].name === 'shield') {
     parent.socket.emit('unequip', {slot: 'offhand'});
   } else if (character.slots['offhand'] === null) {
-    for (let i = character.items.length; i >= 0; i--) {
-      if (character.items[i] && character.items[i].name === 'blade' &&
-          character.items[i].level >= 8) {
-        equip(i);
-      }
+    if (keyItems.blade.length) {
+      equip(keyItems.blade.reduce(function (prev, curr) {
+        return prev.level > curr.level ? prev : curr;
+      }).index);
     }
   }
 }
@@ -1028,8 +1048,9 @@ function pathfind(x, y) {
 
 function main() { // move and attack code
   if (character.rip) return;
-  potions();
   loot();
+  searchInv();
+  potions();
   loopAddition();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
