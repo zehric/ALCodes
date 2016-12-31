@@ -73,6 +73,7 @@ parent.map.on('mousedown', function () {
   currentPath = null;
 });
 
+var lastDeath;
 handle_death = function () {
   function getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -82,6 +83,11 @@ handle_death = function () {
   var timer = getRandomInt(12000, 300000);
   lastPos = [character.real_x, character.real_y];
   lastMap = character.map;
+  if (!lastDeath || new Date() - lastDeath >= 600000) {
+    lastDeath = new Date();
+  } else {
+    timer += 1800000;
+  }
   setTimeout(respawn, timer);
   setTimeout(flee, timer + 200);
   return true;
