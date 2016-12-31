@@ -78,6 +78,7 @@ handle_death = function () {
     return Math.floor(Math.random() * (max - min)) + min;
   }
   var timer = getRandomInt(12000, 300000);
+  lastPos = [character.real_x, character.real_y];
   setTimeout(respawn, timer);
   setTimeout(flee, timer + 200);
   return true;
@@ -621,7 +622,8 @@ function uceItem() {
 }
 
 function playerStrength(player) {
-  return (player.attack * player.frequency) + player.armor +
+  return ((player.invis ? player.attack * 0.8 : player.attack) * 
+      player.frequency) + player.armor +
     player.resistance + player.max_hp * 0.5 + player.speed + player.range;
 }
 
@@ -669,11 +671,11 @@ function doPVP(targets) {
       }));
     }
   } else if (!alwaysFight && !can_move_to(nearestEnemy) && 
-      parent.distance(character, nearestEnemy) >= nearestEnemy.range + 150) {
+      parent.distance(character, nearestEnemy) > nearestEnemy.range + 150) {
     if (targets.target && party.includes(targets.target.name)) {
       healPlayer(targets.target);
-    }
-    if (targets.target && targets.target.type === 'monster') {
+    } else if (attackMonsterToggle && targets.target && 
+        targets.target.type === 'monster') {
       attackMonster(targets.target);
       game_log('Nearby enemies: ' + enemies.map(function (e) {
         return e.name;
@@ -705,7 +707,9 @@ function flee() {
   fleeAttempted = rvr && !character.invis;
   if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
       new Date() <= parent.next_skill.invis) {
-    lastPos = [character.real_x, character.real_y];
+    if (!lastPos) {
+      lastPos = [character.real_x, character.real_y];
+    }
     lastMap = character.map;
     parent.socket.emit('transport', {to: 'jail'});
   }
@@ -993,13 +997,13 @@ function main() { // move and attack code
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
-  if (fledSuccess() || 
-        strongEnemy && new Date() - strongEnemy > 60000) {
+  if (fledSuccess() && 
+        strongEnemy && new Date() - strongEnemy >= 60000) {
     fleeAttempted = false;
     if (rvr) {
       attackMonster(get_nearest_monster());
+      rvr = false;
     }
-    rvr = false;
   }
   tpBack();
   if (currentPath) {
