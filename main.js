@@ -31,10 +31,6 @@ fleeList = ['Ifrit', 'jacob'];
 useHP = 200;
 useMP = 300;
 
-// buy a pot when below these values
-buyHPPotAt = character.max_hp - 200;
-buyMPPotAt = 100;
-
 useAbilities = false; // in pve
 maxMonsterHP = 5000;
 minMonsterXP = 500;
