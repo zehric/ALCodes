@@ -28,8 +28,8 @@ party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk',
 fleeList = ['Ifrit', 'jacob']; 
 
 // use hpot or mpot when lacking this much
-useHP = 200;
-useMP = 300;
+useHP = 250;
+useMP = character.max_mp - 200;
 
 useAbilities = false; // in pve
 maxMonsterHP = 5000;
