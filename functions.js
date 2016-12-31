@@ -1059,7 +1059,7 @@ function main() { // move and attack code
       strongEnemy && new Date() - strongEnemy >= 60000 &&
       character.invis) {
     attackMonster(get_nearest_monster());
-  } else {
+  } else if (character.max_hp - character.hp <= useHP){
     tpBack();
   }
   if (currentPath) {
