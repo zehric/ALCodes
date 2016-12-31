@@ -679,7 +679,11 @@ function doPVP(targets) {
       game_log('Fled from ' + enemies.map(function (e) {
         return e.name;
       }));
-      if (character.afk) {
+      if (character.invis) {
+        set_message('Fled from ' + enemies.map(function (e) {
+          return e.name;
+        }));
+      } else if (character.afk) {
         show_json('Fled from ' + enemies.map(function (e) {
           return e.name;
         }));
