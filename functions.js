@@ -626,7 +626,8 @@ function potions() {
     } else if (keyItems.hpot0.length === 1 && keyItems.hpot0[0].q < 2) {
       buy('hpot0', 1);
     }
-    if (keyItems.mpot0.length === 0 && character.mp < useMP + 50) {
+    if (keyItems.mpot0.length === 0 && 
+        character.max_mp - character.mp < useMP + 50) {
       buy('mpot0', 1);
     }
     if (character.max_hp - character.hp > useHP && 
