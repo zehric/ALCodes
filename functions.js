@@ -575,6 +575,9 @@ var keyItems = {
   'blade': []
 };
 function searchInv() {
+  for (let name in keyItems) {
+    keyItems[name] = [];
+  }
   for (let i = character.items.length - 1; i >= 0; i--) {
     var item = character.items[i];
     if (item && item.name in keyItems) {
