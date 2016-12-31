@@ -79,6 +79,7 @@ handle_death = function () {
   }
   var timer = getRandomInt(12000, 300000);
   lastPos = [character.real_x, character.real_y];
+  lastMap = character.map;
   setTimeout(respawn, timer);
   setTimeout(flee, timer + 200);
   return true;
@@ -343,11 +344,13 @@ function potions() {
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
       parent.G.monsters[t.mtype].range) + 25) {
-    if (character.afk) {
+    if (character.invis) {
+      set_message('Fled from ' + (t.mtype || t.name));
+    } else if (character.afk) {
       show_json('Fled from ' + (t.mtype || t.name));
     }
     game_log('Fled from ' + (t.mtype || t.name));
-    flee();
+    flee(t);
   }
   if (character.mp < character.mp_cost && !hasMPPot1) {
     hasMPPot1 = true;
@@ -654,32 +657,33 @@ function doPVP(targets) {
   }
   if (injured) {
     healPlayer(injured);
-  } else if (!alwaysFight && (can_move_to(nearestEnemy) ||
-        parent.distance(character, nearestEnemy) <= nearestEnemy.range + 150) &&
+  } else if (!alwaysFight &&
       (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
-      !fleeAttempted && !fledSuccess() || enemies.length > allies.length ||
-      (character.hp / character.max_hp < 0.5 && allies.length < 2) || rvr)) {
-    strongEnemy = new Date();
-    rvr = character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue';
-    flee();
-    game_log('Fled from ' + enemies.map(function (e) {
-      return e.name;
-    }));
-    if (character.afk) {
-      show_json('Fled from ' + enemies.map(function (e) {
+      (!parent.next_transport || new Date() >= parent.next_transport || 
+        character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue') && 
+      !fledSuccess() || enemies.length > allies.length ||
+      (character.hp / character.max_hp < 0.5 && allies.length < 2))) {
+    if (!can_move_to(nearestEnemy) && 
+        parent.distance(character, nearestEnemy) > 500) {
+      if (targets.target && party.includes(targets.target.name)) {
+        healPlayer(targets.target);
+      } else if (attackMonsterToggle && targets.target && 
+          targets.target.type === 'monster') {
+        attackMonster(targets.target);
+        game_log('Nearby enemies: ' + enemies.map(function (e) {
+          return e.name;
+        }));
+      }
+    } else {
+      flee(strongestEnemy);
+      game_log('Fled from ' + enemies.map(function (e) {
         return e.name;
       }));
-    }
-  } else if (!alwaysFight && !can_move_to(nearestEnemy) && 
-      parent.distance(character, nearestEnemy) > nearestEnemy.range + 150) {
-    if (targets.target && party.includes(targets.target.name)) {
-      healPlayer(targets.target);
-    } else if (attackMonsterToggle && targets.target && 
-        targets.target.type === 'monster') {
-      attackMonster(targets.target);
-      game_log('Nearby enemies: ' + enemies.map(function (e) {
-        return e.name;
-      }));
+      if (character.afk) {
+        show_json('Fled from ' + enemies.map(function (e) {
+          return e.name;
+        }));
+      }
     }
   } else {
     if (!nearestEnemy.invincible) {
@@ -700,18 +704,21 @@ function fledSuccess() {
   return character.map === 'jail';
 }
 
-var fleeAttempted = false;
-var rvr = false;
 var lastPos;
-function flee() {
-  fleeAttempted = rvr && !character.invis;
-  if (rvr || character.ctype !== 'rogue' || parent.next_skill.invis && 
-      new Date() <= parent.next_skill.invis) {
+function flee(entity) {
+  if (entity && entity.type === 'character') {
+    strongEnemy = new Date();
+  }
+  if (!entity || entity.type === 'character' && entity.ctype === 'rogue' || 
+    character.ctype !== 'rogue' || parent.next_skill.invis && 
+    new Date() < parent.next_skill.invis) {
     if (!lastPos) {
       lastPos = [character.real_x, character.real_y];
     }
     lastMap = character.map;
     parent.socket.emit('transport', {to: 'jail'});
+  } else if (entity.dead || entity.rip) {
+    return;
   }
   if (character.ctype === 'rogue' && (!parent.next_skill.invis || 
       new Date() > parent.next_skill.invis)) {
@@ -788,9 +795,9 @@ function healPlayer(player) {
 function attackLoop() {
   var t = get_target();
   if (!t || t.dead || t.rip || 
-      character.invis && strongEnemy && new Date() - strongEnemy <= 60000 && 
-        !fleeAttempted ||
-      character.invis && character.max_hp - character.hp > useHP) {
+      character.invis && (strongEnemy && new Date() - strongEnemy <= 60000 && 
+        (!parent.next_transport || new Date() >= parent.next_transport) ||
+      character.max_hp - character.hp > useHP)) {
     return;
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
@@ -812,10 +819,10 @@ function attackLoop() {
 }
 
 function useAbilityOn(target) {
-  if (character.ctype === 'rogue' && in_attack_range(target)) {
-    invis();
-  } else if (!target || target.dead || target.rip) {
+  if (!target || target.dead || target.rip) {
     return;
+  } else if (character.ctype === 'rogue') {
+    invis();
   } else if (character.ctype === 'warrior') {
     taunt(target);
   } else if (character.ctype === 'ranger') {
@@ -841,7 +848,6 @@ function curse(target) {
 function invis() {
   if (!character.invis && (!parent.next_skill.invis ||
       new Date() > parent.next_skill.invis)) {
-    fleeAttempted = false;
     parent.socket.emit("ability", {
       name: "invis"
     });
@@ -998,14 +1004,12 @@ function main() { // move and attack code
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
   if (fledSuccess() && 
-        strongEnemy && new Date() - strongEnemy >= 60000) {
-    fleeAttempted = false;
-    if (rvr) {
-      attackMonster(get_nearest_monster());
-      rvr = false;
-    }
+      strongEnemy && new Date() - strongEnemy >= 60000 &&
+      character.invis) {
+    attackMonster(get_nearest_monster());
+  } else {
+    tpBack();
   }
-  tpBack();
   if (currentPath) {
     pathfindMove(currentPath);
   }
