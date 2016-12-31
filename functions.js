@@ -843,8 +843,8 @@ function useAbilityOn(target) {
     invis();
   } else if (character.ctype === 'warrior') {
     taunt(target);
-  } else if (character.ctype === 'ranger' && 
-      target.hp < (1 - target.armor / 1000) * character.attack * 2.5) {
+  } else if (character.ctype === 'ranger' && (target.type === 'monster' ||
+      target.hp < (1 - target.armor / 1000) * character.attack * 2.5)) {
     supershot(target);
   } else if (character.ctype === 'priest') {
     curse(target);
