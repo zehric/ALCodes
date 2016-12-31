@@ -735,10 +735,8 @@ function flee(entity) {
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
   change_target(player);
-  if (!hasHPPot1) {
-    buy('hpot1', 1);
-    hasHPPot1 = true;
-  }
+  hasHPPot1 = false;
+  hasHPPot0 = false;
   var distParams = canRangeMove(player);
   if (!in_attack_range(player) && 
       (character.range <= 50 || player.range >= 50 ||
@@ -778,7 +776,7 @@ function attackMonster(target) {
     change_target(target);
     if (!distParams.canMove && !can_move_to(target) && 
         !in_attack_range(target)) {
-      if (!currentPath) {
+      if (!currentPath || currentPath.length === 0) {
         currentPath = pathfind(target.real_x, target.real_y);
       }
     } else if (target && !target.dead && !target.rip) {
@@ -795,7 +793,7 @@ function healPlayer(player) {
   change_target(player);
   var distParams = canRangeMove(player);
   if (!distParams.canMove && !can_move_to(player) && !in_attack_range(player)) {
-    if (!currentPath) {
+    if (!currentPath || currentPath.length === 0) {
       currentPath = pathfind(player.real_x, player.real_y);
     }
   } else if (player && !player.dead && !player.rip && 
