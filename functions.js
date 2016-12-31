@@ -49,12 +49,14 @@ function keybindings(e) {
   } else if (e.keyCode === 221) {
     attackMonsterToggle = !attackMonsterToggle;
     game_log('Attack monsters: ' + attackMonsterToggle);
+    set_messages('Attack monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 219) {
     kite = !kite;
     game_log('Kite: ' + kite);
   } else if (e.keyCode === 187) {
     alwaysAttackTargeted = !alwaysAttackTargeted;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
+    set_message('Manual Targeting: ' + alwaysAttackTargeted);
   } else if (e.keyCode === 189) {
     goBack = !goBack;
     game_log('Auto TP Back: ' + goBack);
@@ -175,7 +177,7 @@ function canRangeMove(target) {
   var d = vec.length - character.range;
   if (target.moving) {
     rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
-      d / vc)) / (vc - vt * Math.cos(phi));
+      d / vc)) / (vc + vt * Math.abs(Math.cos(phi)));
   } else {
     rangeAdjust = 0;
   }
@@ -194,6 +196,7 @@ var lastAdjust;
 var lastPlus;
 var lastMinus;
 function rangeMove(dist, theta, forceKite, isPVP) {
+  console.log('rangemoving with ' + dist + ', ' + theta);
   var wkr;
   if (isPVP) {
     wkr = 0;
@@ -768,8 +771,13 @@ function attackMonster(target) {
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
-    if (lastPos && character.map === lastMap) {
-      currentPath = pathfind(lastPos[0], lastPos[1]);
+    if (lastPos && character.map === lastMap && !currentPath) {
+      if (can_move_to(lastPos[0], lastPos[1])) {
+        move(lastPos[0], lastPos[1]);
+      } else {
+        currentPath = pathfind(lastPos[0], lastPos[1]);
+      }
+      lastPos = null;
     }
   } else {
     set_message('Attacking ' + target.mtype);
@@ -983,13 +991,17 @@ function tpBack() {
   }
 }
 
+var currentPoint;
 function pathfindMove() {
   if (!currentPath.length) {
     return;
   }
   if (can_move_to(currentPath[0].x, currentPath[0].y)) {
-    var point = currentPath.shift();
-    move(point.x, point.y);
+    currentPoint = currentPath.shift();
+    move(currentPoint.x, currentPoint.y);
+  } else if (character.going_x !== currentPoint.x && 
+      character.going_y !== currentPoint.y) {
+    move(currentPoint.x, currentPoint.y);
   }
 }
 
