@@ -342,7 +342,6 @@ function searchTargets(maxHP, minXP, currentTarget) {
 
 var hasHPPot0 = false;
 var hasMPPot0 = false;
-var hasHPPot1 = false;
 var hasMPPot1 = false;
 function potions() {
   if (character.rip) {
@@ -367,16 +366,12 @@ function potions() {
     hasMPPot0 = true;
     buy('mpot0', 1);
   }
-  if (!survive && !hasHPPot1) {
-    hasHPPot1 = true;
-    buy('hpot1', 1);
-  } else if (character.hp < buyHPPotAt && !hasHPPot0 && !hasHPPot1) {
+  if (character.hp < buyHPPotAt && !hasHPPot0) {
     hasHPPot0 = true;
     buy('hpot0', 1);
   }
   if (new Date() > parent.next_potion) {
     if (!survive) {
-      hasHPPot1 = false;
       parent.use('hp');
     } else if (character.mp < character.mp_cost) {
       hasMPPot1 = false;
