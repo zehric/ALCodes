@@ -200,10 +200,10 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   } else {
     wkr = wallKiteRange;
   }
-  currentPath = null;
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
   if (dist > 0) {
+    currentPath = null;
     if (character.range <= 50 && !forceKite) {
       move(character.real_x + (dist + character.range) * Math.cos(theta),
            character.real_y + (dist + character.range) * Math.sin(theta));
@@ -212,6 +212,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     }
   } else if ((kite || forceKite) && 
       (!lastAdjust || new Date() - lastAdjust > 300)) {
+    currentPath = null;
     var farX = character.real_x + (dist - wkr) * Math.cos(theta);
     var farY = character.real_y + (dist - wkr) * Math.sin(theta);
     var counter = 1;
@@ -252,6 +253,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     lastTheta = theta;
     move(newX, newY);
   } else if (kite || forceKite) {
+    currentPath = null;
     move(character.real_x + dist * Math.cos(lastTheta),
          character.real_y + dist * Math.sin(lastTheta));
   }
@@ -670,7 +672,7 @@ function doPVP(targets) {
       } else if (attackMonsterToggle && targets.target && 
           targets.target.type === 'monster') {
         attackMonster(targets.target);
-        game_log('Nearby enemies: ' + enemies.map(function (e) {
+        game_log('Careful! Nearby enemies: ' + enemies.map(function (e) {
           return e.name;
         }));
       }
@@ -733,8 +735,14 @@ function flee(entity) {
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
   change_target(player);
+  if (!hasHPPot1) {
+    buy('hpot1', 1);
+    hasHPPot1 = true;
+  }
   var distParams = canRangeMove(player);
-  if (!in_attack_range(player)) {
+  if (!in_attack_range(player) && 
+      (character.range <= 50 || player.range >= 50 ||
+        character.speed >= player.speed)) {
     if (distParams.canMove || can_move_to(player)) {
       if (character.ctype === 'warrior') {
         charge();
@@ -744,7 +752,7 @@ function attackPlayer(player) {
         lastMap = character.map;
       }
       rangeMove(distParams.dist, distParams.theta, false, true);
-    } else if (!currentPath) {
+    } else if (!currentPath || currentPath.length === 0) {
       if (!lastPos) {
         lastPos = [character.real_x, character.real_y];
         lastMap = character.map;
@@ -1015,7 +1023,7 @@ function main() { // move and attack code
     tpBack();
   }
   if (currentPath) {
-    pathfindMove(currentPath);
+    pathfindMove();
   }
   var target = get_target();
   if (target && (target.dead || target.rip)) {
