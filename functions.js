@@ -436,7 +436,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
-  if (isPVP && character.range <= 50) {
+  if (isPVP && character.range <= 50 || character.range <= 50 && dist > 0) {
     move(character.real_x + (dist + character.range) * Math.cos(theta),
          character.real_y + (dist + character.range) * Math.sin(theta));
   } else if (dist > 0) {
