@@ -24,6 +24,8 @@ party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk',
          'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
          'bleeeeevl'];
 
+fleeList = ['Ifrit']; // weak characters that scary people use to get us good
+
 // use hpot or mpot when lacking this much
 useHP = 200;
 useMP = 300;

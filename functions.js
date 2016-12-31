@@ -196,7 +196,6 @@ var lastAdjust;
 var lastPlus;
 var lastMinus;
 function rangeMove(dist, theta, forceKite, isPVP) {
-  console.log('rangemoving with ' + dist + ', ' + theta);
   var wkr;
   if (isPVP) {
     wkr = 0;
@@ -205,14 +204,12 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
-  if (dist > 0) {
+  if (isPVP && character.range <= 50) {
+    move(character.real_x + (dist + character.range) * Math.cos(theta),
+         character.real_y + (dist + character.range) * Math.sin(theta));
+  } else if (dist > 0) {
     currentPath = null;
-    if (character.range <= 50 && !forceKite) {
-      move(character.real_x + (dist + character.range) * Math.cos(theta),
-           character.real_y + (dist + character.range) * Math.sin(theta));
-    } else {
-      move(newX, newY);
-    }
+    move(newX, newY);
   } else if ((kite || forceKite) && 
       (!lastAdjust || new Date() - lastAdjust > 300)) {
     currentPath = null;
@@ -643,7 +640,8 @@ function doPVP(targets) {
   var strongestAlly = allies[0];
   var injured;
   for (let enemy of enemies) {
-    if (playerStrength(enemy) > playerStrength(strongestEnemy)) {
+    if (playerStrength(enemy) > playerStrength(strongestEnemy) ||
+        fleeList.includes(strongestEnemy.name)) {
       strongestEnemy = enemy;
     }
     if (parent.distance(character, enemy) < 
@@ -667,7 +665,8 @@ function doPVP(targets) {
       (!parent.next_transport || new Date() >= parent.next_transport || 
         character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue') && 
       !fledSuccess() || enemies.length > allies.length ||
-      (character.hp / character.max_hp < 0.5 && allies.length < 2))) {
+      (character.hp / character.max_hp < 0.5 && allies.length < 2)) ||
+      fleeList.includes(strongestEnemy.name)) {
     if (!can_move_to(nearestEnemy) && 
         parent.distance(character, nearestEnemy) > 500) {
       if (targets.target && party.includes(targets.target.name)) {
@@ -735,11 +734,14 @@ function flee(entity) {
   }
 }
 
+var buypotcd;
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
   change_target(player);
-  hasHPPot1 = false;
-  hasHPPot0 = false;
+  if (!buypotcd || new Date() - buypotcd > 5000) {
+    buy('hpot1', 2);
+    buypotcd = new Date();
+  }
   var distParams = canRangeMove(player);
   if (!in_attack_range(player) && 
       (character.range <= 50 || player.range >= 50 ||
@@ -761,9 +763,8 @@ function attackPlayer(player) {
       currentPath = pathfind(player.real_x, player.real_y);
     }
   } else if (!player.rip) {
-    if (character.range > player.range) {
-      rangeMove(distParams.dist, distParams.theta, true, true);
-    }
+    rangeMove(distParams.dist, distParams.theta, 
+              character.range > player.range, true);
   }
 }
 
