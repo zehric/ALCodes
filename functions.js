@@ -371,7 +371,7 @@ function potions() {
     buy('hpot0', 1);
   }
   if (new Date() > parent.next_potion) {
-    if (!survive) {
+    if (!survive && character.hp < character.max_hp) {
       parent.use('hp');
     } else if (character.mp < character.mp_cost) {
       hasMPPot1 = false;
