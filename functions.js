@@ -577,7 +577,7 @@ var keyItems = {
 function searchInv() {
   for (let i = character.items.length - 1; i >= 0; i--) {
     var item = character.items[i];
-    if (item.name in keyItems) {
+    if (item && item.name in keyItems) {
       keyItems[item.name].push({q: item.q, index: i, level: item.level});
     }
   }
