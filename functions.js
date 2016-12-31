@@ -1003,7 +1003,13 @@ function pathfind(x, y) {
   }
   var from = graph.get(character.real_x, character.real_y);
   var to = graph.get(x, y);
-  return find_path(from, to);
+  var path;
+  try {
+    path = find_path(from, to);
+  } catch (e) {
+    path = null;
+  }
+  return path;
 }
 
 function main() { // move and attack code
