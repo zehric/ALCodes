@@ -602,7 +602,8 @@ function potions() {
     game_log('Fled from ' + (t.mtype || t.name));
     flee(t);
   }
-  if (t && !t.dead && !t.rip && t.type === 'character') {
+  if (t && !t.dead && !t.rip && t.type === 'character' && 
+      !party.includes(t.name)) {
     if (keyItems.hpot1.length === 0) {
       buy('hpot1', 2);
     } else if (keyItems.hpot1.length === 1 && keyItems.hpot1[0].q < 2) {
