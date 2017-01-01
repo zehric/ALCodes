@@ -6,7 +6,7 @@ alwaysFight = false; // always fight in PvP, no matter the odds
 wallKiteRange = 100; // stay this distance away from walls when kiting
 
 autoUCE = true; // auto upgrade/compound/exchange
-autoStat = true; // will also enable/disable autoEquip
+forceUpgrade = false; // force upgrade even if you have high level equipped
 upgradeTo = 7; // for all currently worn equips
 // if true, upgrade everything currently wearing below upgradeTo (if buyable)
 upgradeAll = true; 
