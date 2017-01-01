@@ -673,7 +673,7 @@ function attackMonster(target) {
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
-    if (character.map === lastMap && character.afk) pathBack();
+    if (character.afk) pathBack();
   } else {
     set_message('Attacking ' + target.mtype);
     change_target(target);
