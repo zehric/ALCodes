@@ -33,10 +33,9 @@ var lastMap = character.map;
 var spawnPath;
 var sx = get_map().spawns[0][0], sy = get_map().spawns[0][1];
 if (can_move_to(sx, sy)) {
-  spawnPath = [{x: sx, y: sy}];
+  spawnPath = [{x: character.real_x, y: character.real_y}];
 } else {
-  spawnPath = pathfind(get_map().spawns[0][0], get_map().spawns[0][1],
-    character.real_x, character.real_y);
+  spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
 var attackMonsterToggle = true;
@@ -667,7 +666,7 @@ function attackMonster(target) {
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
-    pathBack();
+    if (character.map === lastMap) pathBack();
   } else {
     set_message('Attacking ' + target.mtype);
     change_target(target);
