@@ -27,6 +27,8 @@ window.setCorrectingInterval = (function(func, delay) {
   tick(func, delay);
 });
 
+var G = parent.G;
+
 var attackMonsterToggle = true;
 var alwaysAttackTargeted = false;
 var goBack = true;
@@ -75,12 +77,8 @@ parent.map.on('mousedown', function () {
 
 var lastDeath;
 handle_death = function () {
-  function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-  }
-  var timer = getRandomInt(12000, 300000);
+  var timer = Math.floor(Math.random() * (Math.floor(300000) - 
+    Math.ceil(12000))) + Math.ceil(12000);
   lastPos = [character.real_x, character.real_y];
   lastMap = character.map;
   if (!lastDeath || new Date() - lastDeath >= 600000) {
@@ -119,228 +117,74 @@ for (let person of party) {
 
 var buyable = ['coat', 'gloves', 'helmet', 'bow', 'pants', 'shoes', 'blade', 
                'claw', 'staff'];
-var statScroll = parent.G.classes[character.ctype].main_stat + 'scroll';
-var wait = false;
+var count = false;
 function uceItem() {
-  if (!autoUCE || wait || character.map === 'bank') {
-    return;
-  }
-  function correctScroll(item) {
-    if (!item.name) {
-      return null;
-    }
-    let grades = parent.G.items[item.name].grades;
-    if (item.level < grades[0]) {
-      return 'scroll0';
-    } else if (item.level < grades[1]) {
-      return 'scroll1';
-    } else {
-      return 'scroll2';
+  count = !count;
+  if (!autoUCE || count || character.map === 'bank') return;
+  for (let slot in character.slots) {
+    let item = character.slots[slot];
+    if (!item) continue;
+    let name = item.name, level = item.level;
+    if (upgradeItems[name] && level >= upgradeItems[name] && !forceUpgrade) {
+      upgradeItems[name] = 0;
+    } else if (upgradeAll && buyable.includes(name) && level < upgradeTo &&
+        !slot.startsWith('trade')) {
+      upgradeItems[name] = upgradeTo;
     }
   }
-  function correctCScroll(item) {
-    if (typeof(item.level) !== 'number') {
-      return null;
-    }
-    if (item.level < 2) {
-      return 'cscroll0';
-    } else if (item.level < 4) {
-      return 'cscroll1';
-    } else {
-      return 'cscroll2';
+  for (let name in upgradeItems) {
+    let g = G.items[name].g
+    if (upgradeItems[name] && buyable.includes(name) && 
+        (!keyItems[name] || !keyItems[name].length) && character.gold >= g) {
+      buy(name, 1)
+      character.gold -= g;
     }
   }
-  var toUpgrades = {}; // name: idx
-  var toStats = {}; // name: idx
-  var toCompounds = {}; // name[level]: [idx1, idx2, idx3]
-  var scrolls = {}; // name: [idx, desiredQuantity]
-  var toExchanges = []; // [idx1, idx2, ...]
-  var emptySlots = []; // [idx1, idx2, ...]
-  if (upgradeAll) {
-    for (let slot in character.slots) {
-      let item = character.slots[slot];
-      if (item && buyable.includes(item.name) && item.level < upgradeTo) {
-        toUpgrades[item.name] = true;
+  for (let name in keyItems) {
+    let itemArr = keyItems[name];
+    if (!itemArr || !itemArr.length) continue;
+    if (sell.includes(name)) {
+      for (let item of itemArr) {
+        parent.sell(item.index);
       }
-    }
-  }
-  if (upgradeItems) {
-    for (let name in upgradeItems) {
-      if (!toUpgrades[name] && buyable.includes(name)) {
-        toUpgrades[name] = true;
+    } else if (upgradeItems[name]) {
+      let index = itemArr[0].index, q = itemArr[0].q, level = itemArr[0].level;
+      let correctScroll = 'scroll' + item_grade(character.items[index]);
+      if (keyItems[correctScroll] && keyItems[correctScroll].length && 
+          keyItems[correctScroll][0].q >= 1) {
+        upgrade(index, keyItems[correctScroll][0].index);
+        keyItems[correctScroll][0].q -= 1;
+      } else if (character.gold >= G.items[correctScroll].g) {
+        buy(correctScroll, 1);
+        character.gold -= G.items[correctScroll].g
       }
-    }
-  }
-  for (let i = 0; i < character.items.length; i++) {
-    let item = character.items[i];
-    if (item === null) { // add to empty slots
-      emptySlots.push(i);
-    } else if (parent.G.items[item.name].e &&
-        parent.G.items[item.name].e <= item.q) { // add to exchange
-      toExchanges.push(i);
-    } else if (toUpgrades[item.name] && !upgradeItems[item.name] && 
-          item.level < upgradeTo ||
-        upgradeItems[item.name] && item.level < upgradeItems[item.name]) { 
-      // add to upgrades
-      toUpgrades[item.name] = i;
-    } else if (toUpgrades[item.name] && !upgradeItems[item.name] &&
-        item.level >= upgradeTo ||
-      upgradeItems[item.name] && item.level >= upgradeItems[item.name]) { 
-      // remove if > upgradeTo
-      // add to stats if doesn't have a stat
-      if (!item.stat_type && parent.G.items[item.name].stat && autoStat) {
-        toStats[item.name] = i;
-      } else if (autoStat) { // autoequip
-        for (let slot in character.slots) {
-          let equipped = character.slots[slot];
-          if (equipped && equipped.name === item.name && 
-              equipped.level < item.level && 
-              equipped.stat_type === item.stat_type) {
-            equip(i);
-            break;
+    } else if (G.items[name].compound && itemArr.length >= 3) {
+      let compounds = {};
+      for (let item of itemArr) {
+        compounds[item.level] ? 
+          compounds[item.level].push(item.index) : 
+          compounds[item.level] = [item.index];
+      }
+      for (let level in compounds) {
+        let indices = compounds[level];
+        if (indices.length >= 3) {
+          let correctCScroll = 'cscroll' + 
+            item_grade(character.items[indices[0]]);
+          if (keyItems[correctCScroll] && keyItems[correctCScroll].length &&
+              keyItems[correctCScroll][0].q >= 1) {
+            compound(indices[0], indices[1], indices[2], 
+              keyItems[correctCScroll][0].index);
+            keyItems[correctCScroll][0].q -= 1;
+          } else if (character.gold >= G.items[correctCScroll].g) {
+            buy(correctCScroll, 1);
+            character.gold -= G.items[correctCScroll].g
           }
         }
       }
-      delete toUpgrades[item.name];
-    } else if (item.name.startsWith('scroll') || 
-        item.name.startsWith('cscroll') || item.name === statScroll) { 
-        // add to scrolls
-      scrolls[item.name] = [i, 0];
-    } else if (parent.G.items[item.name].compound) { // add to compounds
-      let ckey = item.name + item.level;
-      if (toCompounds[ckey] && toCompounds[ckey].length < 3) {
-        toCompounds[ckey].push(i);
-      } else if (!toCompounds[ckey]) {
-        toCompounds[ckey] = [i];
-      }
+    } else if (G.items[name].e && G.items[name].e <= itemArr[0].q) {
+      exchange(itemArr[0].index);
     }
   }
-  if (character.items.length < 42) {
-    for (let i = character.items.length; i < 42; i++) {
-      emptySlots.push(i);
-    }
-  }
-  if (emptySlots.length === 0) {
-    return;
-  }
-  var gc = 0;
-  for (let item in toUpgrades) { // buy items and add to scrolls
-    let index = toUpgrades[item];
-    let s;
-    if (typeof(index) !== 'number') {
-      if (character.gold >= parent.G.items[item].g) {
-        toUpgrades[item] = emptySlots.shift();
-        buy(item, 1);
-        gc += parent.G.items[item].g;
-        s = 'scroll0';
-      } else {
-        delete toUpgrades[item];
-      }
-    } else {
-      s = correctScroll(character.items[index]);
-    }
-    if (s && !scrolls[s] && character.gold >= parent.G.items[s].g + gc) {
-      scrolls[s] = [null, 1];
-    } else if (s && scrolls[s] && (scrolls[s][0] !== null && 
-        character.gold >= parent.G.items[s].g *
-          (scrolls[s][1] + 1 - character.items[scrolls[s][0]].q) + gc ||
-        scrolls[s][0] === null && 
-          character.gold >= parent.G.items[s].g * (scrolls[s][1] + 1) + gc)) {
-      scrolls[s][1] += 1;
-    } else {
-      delete toUpgrades[item];
-    }
-  }
-  for (let item in toCompounds) { // add to scrolls
-    let indices = toCompounds[item];
-    if (indices.length === 3) {
-      let itemObject = character.items[indices[0]];
-      let cs = correctCScroll(itemObject);
-      if (!scrolls[cs] && character.gold >= parent.G.items[cs].g) {
-        scrolls[cs] = [null, 1];
-      } else if (scrolls[cs] && (scrolls[cs][0] !== null && 
-          character.gold >= parent.G.items[cs].g *
-            (scrolls[cs][1] + 1 - character.items[scrolls[cs][0]].q) ||
-          scrolls[cs][0] === null && 
-            character.gold >= parent.G.items[cs].g * (scrolls[cs][1] + 1))) {
-        scrolls[cs][1] += 1;
-      } else {
-        delete toCompounds[item];
-      }
-    } else {
-      delete toCompounds[item];
-    }
-  }
-  for (let item in toStats) { // add to scrolls
-    let index = toStats[item];
-    let itemObject = character.items[index];
-    if (correctScroll(itemObject) === 'scroll0') {
-      if (character.gold >= parent.G.items[statScroll].g) {
-        if (!scrolls[statScroll]) {
-          scrolls[statScroll] = [null, 1];
-        } else {
-          scrolls[statScroll][1] += 1;
-        }
-      } else {
-        delete toStats[item];
-      }
-    } else if (correctScroll(itemObject) === 'scroll1') {
-      if (character.gold >= parent.G.items[statScroll].g * 10) {
-        if (!scrolls[statScroll]) {
-          scrolls[statScroll] = [null, 10];
-        } else {
-          scrolls[statScroll][1] += 10;
-        }
-      } else {
-        delete toStats[item];
-      }
-    } else {
-      if (character.gold >= parent.G.items[statScroll].g * 100) {
-        if (!scrolls[statScroll]) {
-          scrolls[statScroll] = [null, 100];
-        } else {
-          scrolls[statScroll][1] += 100;
-        }
-      } else {
-        delete toStats[item];
-      }
-    }
-  }
-  for (let scroll in scrolls) { // buy scrolls
-    let scrollArr = scrolls[scroll];
-    if (scrollArr[1] > 0 && scrollArr[0] === null) {
-      scrollArr[0] = emptySlots.shift();
-      buy(scroll, scrollArr[1]);
-    } else if (scrollArr[1] > 0) {
-      let difference = scrollArr[1] - character.items[scrollArr[0]].q;
-      if (difference > 0) {
-        buy(scroll, difference);
-      }
-    }
-  }
-  wait = true;
-  setTimeout(function () {
-    wait = false;
-    for (let u in toUpgrades) {
-      let item = character.items[toUpgrades[u]];
-      if (item) {
-        upgrade(toUpgrades[u], scrolls[correctScroll(item)][0]);
-      }
-    }
-    for (let c in toCompounds) {
-      let cItem = toCompounds[c];
-      let item = character.items[cItem[0]];
-      if (item) {
-        compound(cItem[0], cItem[1], cItem[2], scrolls[correctCScroll(item)][0]);
-      }
-    }
-    for (let s in toStats) {
-      upgrade(toStats[s], scrolls[statScroll][0]);
-    }
-    for (let index of toExchanges) {
-      exchange(index);
-    }
-  }, 500);
 }
 
 function closestPoints(e1, e2) {
@@ -570,30 +414,39 @@ var keyItems = {
   'hpot0': [],
   'hpot1': [],
   'mpot0': [],
-  'mpot1': [],
-  'shield': [],
-  'blade': []
+  'mpot1': []
 };
 function searchInv() {
   for (let name in keyItems) {
     keyItems[name] = [];
   }
   for (let i = character.items.length - 1; i >= 0; i--) {
-    var item = character.items[i];
-    if (item && item.name in keyItems) {
-      keyItems[item.name].push({q: item.q, index: i, level: item.level});
+    let item = character.items[i];
+    if (!item) continue;
+    let name = item.name, level = item.level;
+    let keyItem = keyItems[name];
+    let itemObject = {
+      q: item.q,
+      level: level,
+      index: i
+    };
+    if (name in keyItems) {
+      keyItems[name].push(itemObject);
+    } else if (name.includes('scroll') || G.items[name].compound ||
+        G.items[name].e || G.items[name].scroll) { 
+      keyItems[name] ? 
+        keyItems[name].push(itemObject) : 
+        keyItems[name] = [itemObject];
     }
   }
 }
 
 function potions() {
-  if (character.rip) {
-    return;
-  }
+  if (character.rip) return;
   var t = get_target();
   var survive = willSurvive(t);
   if (!survive && parent.distance(t, character) <= (t.range || 
-      parent.G.monsters[t.mtype].range) + 25) {
+      G.monsters[t.mtype].range) + 25) {
     if (character.invis) {
       set_message('Fled from ' + (t.mtype || t.name));
     } else if (character.afk) {
@@ -649,14 +502,14 @@ function willSurvive(target) {
   return !target || party.includes(target.name) || target.dead || target.rip ||
     target.npc || target.ctype === 'merchant' || (target.type === 'monster' && 
       (target.target !== character.name ||
-        (parent.G.monsters[target.mtype].damage_type === 'physical' &&
+        (G.monsters[target.mtype].damage_type === 'physical' &&
           character.hp > target.attack * (1 - character.armor / 1000)) ||
-        (parent.G.monsters[target.mtype].damage_type === 'magical' &&
+        (G.monsters[target.mtype].damage_type === 'magical' &&
           character.hp > target.attack * (1 - character.resistance / 1000)))) ||
       (target.type === 'character' && (target.target !== character.id ||
-        (parent.G.classes[target.ctype].damage_type === 'physical' &&
+        (G.classes[target.ctype].damage_type === 'physical' &&
           character.hp > target.attack * (1 - character.armor / 1000)) ||
-        (parent.G.classes[target.ctype].damage_type === 'magical' &&
+        (G.classes[target.ctype].damage_type === 'magical' &&
           character.hp > target.attack * (1 - character.resistance / 1000))));
 }
 
@@ -747,12 +600,12 @@ function fledSuccess() {
 }
 
 var lastPos;
+function tp() {
+  lastPos = [character.real_x, character.real_y];
+  lastMap = character.map;
+  parent.socket.emit('transport', {to: 'jail'});
+}
 function flee(entity) {
-  function tp() {
-    lastPos = [character.real_x, character.real_y];
-    lastMap = character.map;
-    parent.socket.emit('transport', {to: 'jail'});
-  }
   if (entity && entity.type === 'character') {
     strongEnemy = new Date();
   }
@@ -1063,6 +916,7 @@ function main() { // move and attack code
   if (character.rip) return;
   loot();
   searchInv();
+  uceItem();
   potions();
   loopAddition();
   if (!doAttack) return;
@@ -1101,9 +955,10 @@ function main() { // move and attack code
   }
 }
 
-setCorrectingInterval(uceItem, 1000);
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
 setCorrectingInterval(main, loopInterval);
 if (character.ctype === 'warrior') {
+  keyItems[shield] = [];
+  keyItems[blade] = [];
   setCorrectingInterval(equipLoop, 100);
 }
