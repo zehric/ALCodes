@@ -905,6 +905,7 @@ function invis() {
     parent.socket.emit("ability", {
       name: "invis"
     });
+    character.invis = true;
   }
 }
 
