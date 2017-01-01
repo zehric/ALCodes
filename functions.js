@@ -1551,18 +1551,6 @@ function tpBack() {
     pathBack();
     leftSuccess = false;
   }
-  // if (leftSuccess) {
-  //   parent.socket.emit('transport', {to: lastMap});
-  // }
-  // if (leftSuccess && character.map === lastMap) {
-  //   var x = lastPos[0], y = lastPos[1];
-  //   if (can_move_to(x, y)) {
-  //     move(x, y)
-  //   } else {
-  //     currentPath = pathfind(x, y);
-  //   }
-  //   leftSuccess = false;
-  // }
 }
 
 var ignore = false;
@@ -1590,6 +1578,7 @@ function pathfindMove() {
       lastPos[0] - character.real_x) < 50) {
     attackMonsterToggle = true;
     ignore = false;
+    currentPath = null;
     currentPoint = null;
   } else if (ignore) {
     attackMonsterToggle = false;
@@ -1601,8 +1590,15 @@ function pathfindMove() {
     currentPoint = currentPath.shift();
     move(currentPoint.x, currentPoint.y);
   } else if (currentPoint && (character.going_x !== currentPoint.x && 
-      character.going_y !== currentPoint.y || !character.moving)) {
+      character.going_y !== currentPoint.y && 
+        can_move_to(currentPoint.x, currentPoint.y) || !character.moving)) {
     move(currentPoint.x, currentPoint.y);
+  } else if (!can_move_to(currentPath[0].x, currentPath[0].y) &&
+      currentPoint && (character.going_x !== currentPoint.x && 
+      character.going_y !== currentPoint.y && 
+      !can_move_to(currentPoint.x, currentPoint.y))) {
+    currentPath = null;
+    currentPoint = null;
   }
 }
 
