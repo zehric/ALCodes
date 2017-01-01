@@ -1543,6 +1543,7 @@ function tpBack() {
       new Date() < parent.next_skill.invis) return;
   if (fledSuccess() && 
       (!strongEnemy || new Date() - strongEnemy > 60000)) {
+    attackMonsterToggle = false;
     parent.socket.emit('leave');
     leftSuccess = true;
   }
