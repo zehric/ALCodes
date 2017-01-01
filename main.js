@@ -15,6 +15,7 @@ upgradeItems = {
   'xmassweater': 6,
   'mittens': 6
 }; 
+sell = ['hpamulet'];
 
 // don't go past these coordinates when targeting a mob
 xBoundaries = []; 
