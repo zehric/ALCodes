@@ -627,7 +627,7 @@ function potions() {
       buy('hpot0', 1);
     }
     if (keyItems.mpot0.length === 0 && 
-        character.max_mp - character.mp < useMP + 50) {
+        character.max_mp - character.mp > useMP + 50) {
       buy('mpot0', 1);
     }
     if (character.max_hp - character.hp > useHP && 
@@ -637,7 +637,7 @@ function potions() {
         keyItems.mpot0.length && new Date() > parent.next_potion) {
       use(keyItems.mpot0[0].index);
     } else if (keyItems.mpot0.length === 0 &&
-        character.mp < character.max_mp - 100 &&
+        character.max_mp - character.mp > 100 &&
         new Date() > parent.next_potion) {
       parent.use('mp');
     }
@@ -694,12 +694,12 @@ function doPVP(targets) {
   if (injured) {
     healPlayer(injured);
   } else if (!alwaysFight &&
-      (playerStrength(strongestAlly) < playerStrength(strongestEnemy) &&
+      ((playerStrength(strongestAlly) < playerStrength(strongestEnemy) ||
+        fleeList.includes(strongestEnemy.name)) &&
       (!parent.next_transport || new Date() >= parent.next_transport || 
         character.ctype === 'rogue' && strongestEnemy.ctype === 'rogue') && 
       !fledSuccess() || enemies.length > allies.length ||
-      (character.hp / character.max_hp < 0.5 && allies.length < 2)) ||
-      fleeList.includes(strongestEnemy.name)) {
+      (character.hp / character.max_hp < 0.5 && allies.length < 2))) {
     if (!can_move_to(nearestEnemy) && 
         parent.distance(character, nearestEnemy) > 500) {
       if (targets.target && party.includes(targets.target.name)) {
@@ -747,15 +747,22 @@ function fledSuccess() {
 
 var lastPos;
 function flee(entity) {
-  if (entity && entity.type === 'character') {
-    strongEnemy = new Date();
-  }
-  if (!entity || entity.type === 'character' && entity.ctype === 'rogue' || 
-    character.ctype !== 'rogue' || parent.next_skill.invis && 
-    new Date() < parent.next_skill.invis) {
+  function tp() {
     lastPos = [character.real_x, character.real_y];
     lastMap = character.map;
     parent.socket.emit('transport', {to: 'jail'});
+  }
+  if (entity && entity.type === 'character') {
+    strongEnemy = new Date();
+  }
+  if (character.ctype === 'rogue' && entity && entity.type === 'character' && 
+      entity.ctype === 'rogue' && new Date() < parent.next_transport) {
+    setTimeout(tp, parent.next_transport - new Date() + 10);
+  } else if (!entity || entity.type === 'character' && 
+        entity.ctype === 'rogue' || 
+      character.ctype !== 'rogue' || parent.next_skill.invis && 
+      new Date() < parent.next_skill.invis) {
+    tp();
   } else if (entity.dead || entity.rip) {
     return;
   }
