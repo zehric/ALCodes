@@ -203,7 +203,8 @@ function uceItem() {
           }
         }
       }
-    } else if (G.items[name].e && G.items[name].e <= itemArr[0].q) {
+    } else if (autoExchange && G.items[name].e && 
+        G.items[name].e <= itemArr[0].q) {
       exchange(itemArr[0].index);
     }
   }
@@ -987,7 +988,7 @@ function main() { // move and attack code
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
 setCorrectingInterval(main, loopInterval);
 if (character.ctype === 'warrior') {
-  keyItems[shield] = [];
-  keyItems[blade] = [];
+  keyItems['shield'] = [];
+  keyItems['blade'] = [];
   setCorrectingInterval(equipLoop, 100);
 }
