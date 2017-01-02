@@ -38,7 +38,7 @@ if (can_move_to(sx, sy)) {
   spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
-var attackMonsterToggle = true;
+var attackMonsterToggle = true, ov = false;
 var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {
@@ -59,6 +59,7 @@ function keybindings(e) {
     parent.socket.emit('transport', {to: 'jail'});
   } else if (e.keyCode === 221) {
     attackMonsterToggle = !attackMonsterToggle;
+    ov = !ov;
     game_log('Attack monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 219) {
     kite = !kite;
@@ -892,7 +893,7 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if ((!currentPath || !currentPath.length) && (!currentPoint ||
+  if (!ov && (!currentPath || !currentPath.length) && (!currentPoint ||
       character.real_x === currentPoint.x && 
       character.real_y === currentPoint.y)) {
     attackMonsterToggle = true;
