@@ -874,10 +874,9 @@ function tpBack() {
   }
 }
 
-var ignore = false;
 function pathBack() {
   if (!spawnPath) return;
-  ignore = true;
+  attackMonsterToggle = false;
   if (character.map !== lastMap) {
     parent.socket.emit('transport', {to: lastMap});
     currentPath = spawnPath.slice();
@@ -895,15 +894,12 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if (ignore && (!currentPath || !currentPath.length) && currentPoint &&
+  if ((!currentPath || !currentPath.length) && currentPoint &&
       character.real_x === currentPoint.x && 
       character.real_y === currentPoint.y) {
     attackMonsterToggle = true;
-    ignore = false;
     currentPath = null;
     currentPoint = null;
-  } else if (ignore) {
-    attackMonsterToggle = false;
   }
   if (!currentPath || !currentPath.length) {
     return;
