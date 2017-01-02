@@ -458,7 +458,7 @@ function searchInv() {
     if (name in keyItems) {
       keyItems[name].push(itemObject);
     } else if (name.includes('scroll') || G.items[name].compound ||
-        G.items[name].e || G.items[name].scroll) { 
+        G.items[name].e || name in upgradeItems || sell.includes(name)) { 
       keyItems[name] ? 
         keyItems[name].push(itemObject) : 
         keyItems[name] = [itemObject];
