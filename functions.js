@@ -60,13 +60,11 @@ function keybindings(e) {
   } else if (e.keyCode === 221) {
     attackMonsterToggle = !attackMonsterToggle;
     game_log('Attack monsters: ' + attackMonsterToggle);
-    set_message('Attack monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 219) {
     kite = !kite;
   } else if (e.keyCode === 187) {
     alwaysAttackTargeted = !alwaysAttackTargeted;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
-    set_message('Manual Targeting: ' + alwaysAttackTargeted);
   } else if (e.keyCode === 189) {
     goBack = !goBack;
     game_log('Auto TP Back: ' + goBack);
@@ -894,9 +892,9 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if ((!currentPath || !currentPath.length) && currentPoint &&
+  if ((!currentPath || !currentPath.length) && (!currentPoint ||
       character.real_x === currentPoint.x && 
-      character.real_y === currentPoint.y) {
+      character.real_y === currentPoint.y)) {
     attackMonsterToggle = true;
     currentPath = null;
     currentPoint = null;
