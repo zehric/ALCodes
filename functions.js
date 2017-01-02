@@ -143,6 +143,7 @@ var count = false;
 function uceItem() {
   count = !count;
   if (!autoUCE || count || character.map === 'bank') return;
+  console.log(upgradeItems['shoes']);
   for (let slot in character.slots) {
     let item = character.slots[slot];
     if (!item) continue;
@@ -171,6 +172,7 @@ function uceItem() {
       }
     } else if (upgradeItems[name]) {
       let index = itemArr[0].index, q = itemArr[0].q, level = itemArr[0].level;
+      if (level >= upgradeItems[name]) continue;
       let correctScroll = 'scroll' + item_grade(character.items[index]);
       if (keyItems[correctScroll] && keyItems[correctScroll].length && 
           keyItems[correctScroll][0].q >= 1) {
