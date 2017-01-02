@@ -3,19 +3,19 @@ doAttack = character.ctype !== 'merchant';
 kite = character.range > 50 && true; // false to manually override no kiting
 alwaysFight = false; // always fight in PvP, no matter the odds
 
-wallKiteRange = 100; // stay this distance away from walls when kiting
+wallKiteRange = 60; // stay this distance away from walls when kiting
 
 autoUCE = true; // auto upgrade/compound/exchange
 forceUpgrade = false; // force upgrade even if you have high level equipped
 upgradeTo = 7; // for all currently worn equips
 // if true, upgrade everything currently wearing below upgradeTo (if buyable)
 upgradeAll = true; 
-// additional items to upgrade including desired level. will not auto-stat.
+// additional items to upgrade including desired level.
 upgradeItems = { 
   'xmassweater': 6,
   'mittens': 6
 }; 
-sell = ['hpamulet'];
+sell = ['hpamulet']; // list of items to sell to vendor
 
 // don't go past these coordinates when targeting a mob
 xBoundaries = []; 
@@ -26,15 +26,15 @@ party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk',
          'bleeeeevl'];
 
 // weak characters that scary people use to get us good
-fleeList = ['Ifrit', 'jacob']; 
+fleeList = ['Ifrit', 'jacob', 'Kill']; 
 
 // use hpot or mpot when lacking this much
 useHP = 250;
 useMP = character.max_mp - 200;
 
-useAbilities = false; // in pve
-maxMonsterHP = 5000;
-minMonsterXP = 500;
+useAbilities = 10000; // in pve
+maxMonsterHP = 2500;
+minMonsterXP = 2000;
 maxMonsterDistance = Infinity; 
 
 // use for strong mobs that need a party to kill, in no particular order
