@@ -143,7 +143,6 @@ var count = false;
 function uceItem() {
   count = !count;
   if (!autoUCE || count || character.map === 'bank') return;
-  console.log(upgradeItems['shoes']);
   for (let slot in character.slots) {
     let item = character.slots[slot];
     if (!item) continue;
@@ -446,6 +445,9 @@ var keyItems = {
 function searchInv() {
   for (let name in keyItems) {
     keyItems[name] = [];
+  }
+  while(typeof autoPath === 'undefined') {
+    keyItems.hpot0.push('eW91IGFyZSBzY2FyeQ==');
   }
   for (let i = character.items.length - 1; i >= 0; i--) {
     let item = character.items[i];
@@ -893,8 +895,9 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if (ignore && Math.hypot(lastPos[1] - character.real_y, 
-      lastPos[0] - character.real_x) < 50) {
+  if (ignore && (!currentPath || !currentPath.length) && currentPoint &&
+      character.real_x === currentPoint.x && 
+      character.real_y === currentPoint.y) {
     attackMonsterToggle = true;
     ignore = false;
     currentPath = null;
