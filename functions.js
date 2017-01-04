@@ -64,6 +64,7 @@ function keybindings(e) {
   } else if (e.keyCode === 219) {
     kite = !kite;
   } else if (e.keyCode === 187) {
+    parent.ctarget = null;
     alwaysAttackTargeted = !alwaysAttackTargeted;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
   } else if (e.keyCode === 189) {
@@ -110,7 +111,7 @@ handle_death = function () {
   setTimeout(respawn, timer);
   setTimeout(flee, timer + 200);
   return true;
-}
+};
 
 on_party_invite = function (name) {
   if (party.includes(name)) {
@@ -154,10 +155,10 @@ function uceItem() {
     }
   }
   for (let name in upgradeItems) {
-    let g = G.items[name].g
+    let g = G.items[name].g;
     if (upgradeItems[name] && buyable.includes(name) && 
         (!keyItems[name] || !keyItems[name].length) && character.gold >= g) {
-      buy(name, 1)
+      buy(name, 1);
       character.gold -= g;
     }
   }
@@ -178,7 +179,7 @@ function uceItem() {
         keyItems[correctScroll][0].q -= 1;
       } else if (character.gold >= G.items[correctScroll].g) {
         buy(correctScroll, 1);
-        character.gold -= G.items[correctScroll].g
+        character.gold -= G.items[correctScroll].g;
       }
     } else if (G.items[name].compound && itemArr.length >= 3) {
       let compounds = {};
@@ -199,7 +200,7 @@ function uceItem() {
             keyItems[correctCScroll][0].q -= 1;
           } else if (character.gold >= G.items[correctCScroll].g) {
             buy(correctCScroll, 1);
-            character.gold -= G.items[correctCScroll].g
+            character.gold -= G.items[correctCScroll].g;
           }
         }
       }
@@ -271,15 +272,18 @@ function canRangeMove(target) {
   var theta = vec.theta;
   var rangeAdjust;
   var phi = target.angle * Math.PI / 180 - theta;
-  var vc = character.speed;
-  var vt = target.speed;
+  var vc = character.speed, vt = target.speed;
   var d = vec.length - character.range;
   if (target.moving) {
-    rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
-      d / vc)) / (vc + vt * Math.abs(Math.cos(phi)));
+    // rangeAdjust = (vc * vt * Math.cos(phi) * (0.1 + 
+    //   Math.abs(d) / vc)) / (vc - vt * Math.cos(phi));
+    rangeAdjust = (vt * Math.cos(phi) * (Math.abs(d) / vc));
   } else {
     rangeAdjust = 0;
   }
+  if (rangeAdjust > 0) rangeAdjust += vt * 0.1 * Math.cos(phi);
+  rangeAdjust = (rangeAdjust > 100) ? 100 : rangeAdjust;
+  rangeAdjust = (rangeAdjust < -100) ? -100 : rangeAdjust;
   var dist = Math.ceil(d + rangeAdjust);
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
@@ -303,7 +307,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
   }
   var newX = character.real_x + dist * Math.cos(theta);
   var newY = character.real_y + dist * Math.sin(theta);
-  if (isPVP && character.range <= 50 || character.range <= 50 && dist > 0) {
+  if (character.range <= 50 && (isPVP || dist > 0)) {
     move(character.real_x + (dist + character.range) * Math.cos(theta),
          character.real_y + (dist + character.range) * Math.sin(theta));
   } else if (dist > 0) {
@@ -340,9 +344,9 @@ function rangeMove(dist, theta, forceKite, isPVP) {
       farX = character.real_x + (dist - wkr) * Math.cos(theta);
       farY = character.real_y + (dist - wkr) * Math.sin(theta);
       newX = character.real_x + 
-             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.cos(theta);
+             (dist - wkr / 63 * (theta % (2 * Math.PI))) * Math.cos(theta);
       newY = character.real_y +
-             (dist - wkr / 63 * Math.ceil(counter / 2)) * Math.sin(theta);
+             (dist - wkr / 63 * (theta % (2 * Math.PI))) * Math.sin(theta);
       counter++;
     }
     if (counter % 2 === 1) {
@@ -362,7 +366,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
 }
 
 function searchTargets(maxHP, minXP, currentTarget) {
-  if (currentTarget && !party.includes(currentTarget.name) && !parent.pvp &&
+  if (currentTarget && currentTarget.type !== 'character' && !parent.pvp &&
         (!currentTarget.target || party.includes(currentTarget.target)) && 
       character.ctype !== 'priest' && 
       (parent.distance(currentTarget, character) <= character.range + 50 || 
@@ -559,7 +563,8 @@ var strongEnemy;
 function doPVP(targets) {
   var allies = targets.allies;
   var enemies = targets.enemies;
-  var strongestEnemy = nearestEnemy = enemies[0];
+  var strongestEnemy = enemies[0];
+  var nearestEnemy = enemies[0];
   var strongestAlly = allies[0];
   var injured;
   for (let enemy of enemies) {
@@ -784,7 +789,6 @@ function invis() {
 function burst(target) {
   if (!parent.next_skill.burst || new Date() > parent.next_skill.burst) {
     lastburst = new Date();
-    buy('mpot1', 1);
     parent.socket.emit("ability", {
       name: "burst",
       id: target.id
@@ -795,7 +799,6 @@ function burst(target) {
 function supershot(target) {
   if ((!parent.next_skill.supershot || 
       new Date() > parent.next_skill.supershot) && character.mp >= 400) {
-    buy('mpot0', 1);
     parent.socket.emit("ability", {
       name: "supershot",
       id: target.id
@@ -967,7 +970,7 @@ function main() { // move and attack code
       strongEnemy && new Date() - strongEnemy >= 60000 &&
       character.invis) {
     attackMonster(get_nearest_monster());
-  } else if (character.max_hp - character.hp <= useHP){
+  } else if (character.max_hp - character.hp <= useHP) {
     tpBack();
   }
   pathfindMove();
@@ -985,7 +988,7 @@ function main() { // move and attack code
   if (target && target.players) {
     doPVP(target);
   } else if (target && target.type === 'character' && 
-      party.includes(target.name)) {
+      character.ctype === 'priest' && party.includes(target.name)) {
     healPlayer(target);
   } else if (parent.pvp && target && target.type === 'character') {
     attackPlayer(target);
