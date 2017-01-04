@@ -484,22 +484,29 @@ function potions() {
     game_log('Fled from ' + (t.mtype || t.name));
     flee(t);
   }
-  if (t && !t.dead && !t.rip && t.type === 'character' && 
+  if (parent.pvp && t && !t.dead && !t.rip && t.type === 'character' && 
       !party.includes(t.name)) {
-    if (keyItems.hpot1.length === 0) {
-      buy('hpot1', 2);
-    } else if (keyItems.hpot1.length === 1 && keyItems.hpot1[0].q < 2) {
-      buy('hpot1', 1);
+    if (character.ctype !== 'priest') {
+      if (keyItems.hpot1.length === 0) {
+        buy('hpot1', 2);
+      } else if (keyItems.hpot1.length === 1 && keyItems.hpot1[0].q < 2) {
+        buy('hpot1', 1);
+      }
     }
     if (keyItems.mpot1.length === 0) {
       buy('mpot1', 2);
     } else if (keyItems.mpot1.length === 1 && keyItems.mpot1[0].q < 2) {
       buy('mpot1', 1);
     }
-    if (character.mp < character.mp_cost + 50 && 
+    if (character.ctype === 'priest' && 
+        character.mp < character.max_mp - 500 &&
         new Date() > parent.next_potion && keyItems.mpot1.length) {
       use(keyItems.mpot1[0].index);
-    } else if (character.hp < character.max_hp - 250 && 
+    } else if (character.mp < character.mp_cost + 150 && 
+        new Date() > parent.next_potion && keyItems.mpot1.length) {
+      use(keyItems.mpot1[0].index);
+    } else if (character.ctype !== 'priest' && 
+        character.hp < character.max_hp - 325 && 
         new Date() > parent.next_potion && keyItems.hpot1.length) {
       use(keyItems.hpot1[0].index);
     }
@@ -509,7 +516,7 @@ function potions() {
     } else if (keyItems.hpot0.length === 1 && keyItems.hpot0[0].q < 2) {
       buy('hpot0', 1);
     }
-    if (keyItems.mpot0.length === 0 && 
+    if (keyItems.mpot0.length === 0 &&
         character.max_mp - character.mp > useMP + 50) {
       buy('mpot0', 1);
     }
