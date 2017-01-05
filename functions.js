@@ -58,6 +58,7 @@ function keybindings(e) {
     game_log('Auto TP Back Disabled. Reenable with -');
     parent.socket.emit('transport', {to: 'jail'});
   } else if (e.keyCode === 221) {
+    if (get_targeted_monster()) parent.ctarget = null;
     attackMonsterToggle = !attackMonsterToggle;
     ov = !ov;
     game_log('Attack monsters: ' + attackMonsterToggle);
@@ -686,10 +687,13 @@ function attackPlayer(player) {
 }
 
 function attackMonster(target) {
+  if (Math.hypot(character.real_x - lastPos[0], character.real_y - lastPos[1]) >
+      returnDistance && character.map === lastMap) {
+    pathBack();
+  }
   var distParams = canRangeMove(target);
   if (!target || target.dead) {
     set_message('No monsters');
-    if (character.afk) pathBack();
   } else {
     set_message('Attacking ' + target.mtype);
     change_target(target);
