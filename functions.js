@@ -38,7 +38,7 @@ if (can_move_to(sx, sy)) {
   spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
-var attackMonsterToggle = !alwaysFight, ov = false;
+var attackMonsterToggle = !alwaysFight, ov = alwaysFight;
 var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {

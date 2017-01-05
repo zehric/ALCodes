@@ -18,9 +18,12 @@ upgradeItems = {
 }; 
 sell = ['hpamulet']; // list of items to sell to vendor
 
-// don't go past these coordinates when targeting a mob
+// don't go past these coordinates when kiting / targeting a mob
 xBoundaries = []; 
 yBoundaries = []; 
+
+// if this much away from save location, return to save location
+returnDistance = Infinity; 
 
 party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
          'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
