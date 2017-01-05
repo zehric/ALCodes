@@ -38,7 +38,7 @@ if (can_move_to(sx, sy)) {
   spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
-var attackMonsterToggle = true, ov = false;
+var attackMonsterToggle = !alwaysFight, ov = false;
 var alwaysAttackTargeted = false;
 var goBack = true;
 function keybindings(e) {
@@ -59,6 +59,8 @@ function keybindings(e) {
     parent.socket.emit('transport', {to: 'jail'});
   } else if (e.keyCode === 221) {
     if (get_targeted_monster()) parent.ctarget = null;
+    currentPath = null;
+    currentPoint = null;
     attackMonsterToggle = !attackMonsterToggle;
     ov = !ov;
     game_log('Attack monsters: ' + attackMonsterToggle);
@@ -66,6 +68,8 @@ function keybindings(e) {
     kite = !kite;
   } else if (e.keyCode === 187) {
     parent.ctarget = null;
+    currentPath = null;
+    currentPoint = null;
     alwaysAttackTargeted = !alwaysAttackTargeted;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
   } else if (e.keyCode === 189) {
@@ -688,7 +692,7 @@ function attackPlayer(player) {
 
 function attackMonster(target) {
   if (Math.hypot(character.real_x - lastPos[0], character.real_y - lastPos[1]) >
-      returnDistance && character.map === lastMap) {
+      returnDistance && character.map === lastMap && character.afk) {
     pathBack();
   }
   var distParams = canRangeMove(target);
