@@ -6,13 +6,8 @@ loopAddition = function () {
       && character.real_x !== 0 && character.real_y !== 0) move(0,0);
 
   if (character.map !== 'batcave' && lastmvamp && 
-      new Date() - lastmvamp > 1080000) {
+      new Date() - lastmvamp > 1075000) {
     parent.socket.emit('transport', {to: 'batcave'});
-    setTimeout(function () {
-      if (!parent.ctarget || parent.ctarget.mtype !== 'mvampire') {
-        parent.socket.emit('transport', {to: 'arena'});
-      }
-    }, 5000);
   }
 
   if (parent.ctarget && parent.ctarget.mtype === 'mvampire' 
@@ -37,3 +32,18 @@ loopAddition = function () {
     }
   }
 };
+
+// batcave stealing and snake switching
+var lastmvamp;
+loopAddition = function () {
+  if (parent.ctarget && parent.ctarget.mtype === 'mvampire' 
+      && parent.ctarget.dead) {
+    lastmvamp = new Date();
+    pathBack();
+  }
+  if (character.map === 'halloween' && lastmvamp && 
+      new Date() - lastmvamp > 1075000) {
+    parent.socket.emit('transport', {to: 'batcave'});
+  setTimeout(function () {currentPoint = null; currentPath = null; move(0,0);}, 100);
+  }
+}

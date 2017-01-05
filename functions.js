@@ -835,37 +835,42 @@ function charge() {
 }
 
 function equipShield() {
-  if (!character.slots['offhand'] || 
+  if (!character.slots['offhand'] ||
       character.slots['offhand'].name !== 'shield') {
-    if (keyItems.shield.length) {
+    if (keyItems.shield.length && !shieldEquipped) {
       equip(keyItems.shield.reduce(function (prev, curr) {
         return prev.level > curr.level ? prev : curr;
       }).index);
     }
+    shieldEquipped = true;
   }
 }
 
-function equipWeapon() {
-  if (character.slots['offhand'] !== null && 
-      character.slots['offhand'].name === 'shield') {
+function equipBlade() {
+  if (character.slots['offhand'] && 
+      character.slots['offhand'].name === 'shield' && shieldEquipped) {
     parent.socket.emit('unequip', {slot: 'offhand'});
-  } else if (character.slots['offhand'] === null) {
     if (keyItems.blade.length) {
       equip(keyItems.blade.reduce(function (prev, curr) {
         return prev.level > curr.level ? prev : curr;
       }).index);
     }
+    shieldEquipped = false;
   }
 }
 
 function equipLoop() {
-  var t = get_target();
-  if (!t || t.dead || t.rip || party.includes(t) || character.rip) return;
-  if (!parent.next_attack || parent.next_attack - new Date() <= 400 && 
+  if (keyItems.shield && keyItems.shield.length || character.slots['offhand'] &&
+      character.slots['offhand'].name === 'shield') {
+    var t = get_target();
+    if (!t || t.dead || t.rip || party.includes(t) || character.rip) {
+      equipShield();
+    } else if (!parent.next_attack || parent.next_attack - new Date() <= 250 && 
       in_attack_range(t)) {
-    equipWeapon();
-  } else {
-    equipShield();
+      equipBlade();
+    } else if (parent.next_attack && parent.next_attack - new Date() > 50) {
+      equipShield();
+    }
   }
 }
 
@@ -1010,5 +1015,7 @@ setCorrectingInterval(main, loopInterval);
 if (character.ctype === 'warrior') {
   keyItems['shield'] = [];
   keyItems['blade'] = [];
+  var shieldEquipped = character.slots['offhand'] && 
+    character.slots['offhand'].name === 'shield';
   setCorrectingInterval(equipLoop, 100);
 }
