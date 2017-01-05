@@ -41,7 +41,7 @@ loopAddition = function () {
     lastmvamp = new Date();
     pathBack();
   }
-  if (character.map === 'halloween' && lastmvamp && 
+  if (character.map !== 'halloween' && lastmvamp && 
       new Date() - lastmvamp > 1075000) {
     parent.socket.emit('transport', {to: 'batcave'});
   setTimeout(function () {currentPoint = null; currentPath = null; move(0,0);}, 100);

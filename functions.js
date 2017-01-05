@@ -384,7 +384,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
   for (let id in parent.entities) {
     let current = parent.entities[id];
     if (parent.pvp && current.type === 'character' && !current.rip &&
-        !current.npc) {
+        !current.npc && current.ctype !== 'merchant') {
       if (party.includes(current.name)) {
         allies.push(current);
       } else {
@@ -703,7 +703,7 @@ function attackMonster(target) {
     change_target(target);
     if (!distParams.canMove && !can_move_to(target) && 
         !in_attack_range(target)) {
-      if (!currentPath || currentPath.length === 0) {
+      if ((!currentPath || currentPath.length === 0) && pathfindTo) {
         currentPath = pathfind(target.real_x, target.real_y);
       }
     } else if (target && !target.dead && !target.rip) {

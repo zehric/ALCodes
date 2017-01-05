@@ -40,6 +40,7 @@ useAbilities = 10000; // in pve
 maxMonsterHP = 2500;
 minMonsterXP = 2000;
 maxMonsterDistance = Infinity; 
+pathfindTo = true;
 
 // use for strong mobs that need a party to kill, in no particular order
 priorityMonsters = ['mvampire'];
