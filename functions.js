@@ -78,7 +78,6 @@ function keybindings(e) {
   } else if (e.keyCode === 40) {
     lastPos = [character.real_x, character.real_y];
     lastMap = character.map;
-    var spawnPath;
     var sx = get_map().spawns[0][0], sy = get_map().spawns[0][1];
     if (can_move_to(sx, sy)) {
       spawnPath = [{x: character.real_x, y: character.real_y}];
