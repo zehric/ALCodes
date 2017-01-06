@@ -978,6 +978,7 @@ function targets() {
   var t = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (t && t.players) {
     doPVP(t);
+    t = get_target();
   } else {
     change_target(t);
   }
