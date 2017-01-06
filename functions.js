@@ -84,8 +84,6 @@ function keybindings(e) {
     } else {
       spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
     }
-    spawnPath = pathfind(get_map().spawns[0][0], get_map().spawns[0][1],
-      character.real_x, character.real_y);
     game_log('Saved current location. Come back here with up arrow.');
   } else if (e.keyCode === 38) {
     pathBack();
@@ -999,8 +997,6 @@ function main() { // move and attack code
       character.invis) {
     let t = get_nearest_monster();
     change_target(t);
-    attackMonster(t);
-    
   } else if (character.max_hp - character.hp <= useHP) {
     tpBack();
   }
