@@ -429,7 +429,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
     return character;
   }
   if (parent.pvp || character.ctype === 'priest') {
-    if (currentTarget && !party.includes(currentTarget.name) &&
+    if (!target || currentTarget && !party.includes(currentTarget.name) &&
         (!target || !party.includes(target.name)) &&
         (!currentTarget.target || party.includes(currentTarget.target)) &&
         (parent.distance(currentTarget, character) <= character.range + 50 || 
