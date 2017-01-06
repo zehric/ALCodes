@@ -969,6 +969,7 @@ function targets() {
   searchInv();
   uceItem();
   potions();
+  loopAddition();
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
@@ -990,7 +991,6 @@ function targets() {
 function main() { // move and attack code
   if (character.rip) return;
   loot();
-  loopAddition();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
