@@ -592,7 +592,7 @@ function doPVP(targets) {
     }
   }
   if (injured) {
-    healPlayer(injured);
+    change_target(injured);
   } else if (!alwaysFight &&
       ((playerStrength(strongestAlly) < playerStrength(strongestEnemy) ||
         fleeList.includes(strongestEnemy.name)) &&
@@ -603,10 +603,10 @@ function doPVP(targets) {
     if (!can_move_to(nearestEnemy) && 
         parent.distance(character, nearestEnemy) > 500) {
       if (targets.target && party.includes(targets.target.name)) {
-        healPlayer(targets.target);
+        change_target(targets.target);
       } else if (attackMonsterToggle && targets.target && 
           targets.target.type === 'monster') {
-        attackMonster(targets.target);
+        change_target(targets.target);
         game_log('Careful! Nearby enemies: ' + enemies.map(function (e) {
           return e.name;
         }));
@@ -628,13 +628,13 @@ function doPVP(targets) {
     }
   } else {
     if (!nearestEnemy.invincible) {
-      attackPlayer(nearestEnemy);
+      change_target(nearestEnemy);
     } else if (!strongestEnemy.invincible) {
-      attackPlayer(strongestEnemy);
+      change_target(strongestEnemy);
     } else if (enemies.length > 2) {
       for (let enemy of enemies) {
         if (!enemy.invincible) {
-          attackPlayer(enemy);
+          change_target(enemy);
         }
       }
     }
@@ -671,7 +671,7 @@ function flee(entity) {
 
 function attackPlayer(player) {
   set_message('Attacking ' + player.name);
-  change_target(player);
+  // change_target(player);
   var distParams = canRangeMove(player);
   if (!in_attack_range(player) && 
       (character.range <= 50 || player.range >= 50 ||
@@ -700,7 +700,7 @@ function attackMonster(target) {
     set_message('No monsters');
   } else {
     set_message('Attacking ' + target.mtype);
-    change_target(target);
+    // change_target(target);
     if (!distParams.canMove && !can_move_to(target) && 
         !in_attack_range(target)) {
       if ((!currentPath || currentPath.length === 0) && pathfindTo) {
@@ -718,7 +718,7 @@ function attackMonster(target) {
 
 function healPlayer(player) {
   set_message('Healing ' + player.name);
-  change_target(player);
+  // change_target(player);
   var distParams = canRangeMove(player);
   if (!distParams.canMove && !can_move_to(player) && !in_attack_range(player)) {
     if (!currentPath || currentPath.length === 0) {
@@ -737,11 +737,6 @@ function attackLoop() {
         (!parent.next_transport || new Date() >= parent.next_transport) ||
       character.max_hp - character.hp > useHP)) {
     return;
-  }
-  if (t && t.type === 'character' && !party.includes(t.name) ||
-      t && t.type === 'monster' && (useAbilities === true ||
-        useAbilities !== false && useAbilities <= t.max_hp)) {
-    useAbilityOn(t);
   }
   if (t && party.includes(t.name) && character.ctype === 'priest' && 
       in_attack_range(t)) {
@@ -969,12 +964,32 @@ function pathfind(x, y, x2, y2) {
   return path;
 }
 
-function main() { // move and attack code
+function targets() {
   if (character.rip) return;
-  loot();
   searchInv();
   uceItem();
   potions();
+  var target = get_target();
+  if (target && (target.dead || target.rip)) {
+    target = null;
+    parent.ctarget = null;
+  }
+  var t = searchTargets(maxMonsterHP, minMonsterXP, target);
+  if (t && t.players) {
+    doPVP(t);
+  } else if (t.type !== 'monster' || attackMonsterToggle){
+    change_target(t);
+  }
+  if (t && t.type === 'character' && !party.includes(t.name) ||
+      t && t.type === 'monster' && (useAbilities === true ||
+      useAbilities !== false && useAbilities <= t.max_hp)) {
+    useAbilityOn(t);
+  }
+}
+
+function main() { // move and attack code
+  if (character.rip) return;
+  loot();
   loopAddition();
   if (!doAttack) return;
   if (character.invis && strongEnemy && 
@@ -988,19 +1003,12 @@ function main() { // move and attack code
   }
   pathfindMove();
   var target = get_target();
-  if (target && (target.dead || target.rip)) {
-    target = null;
-    parent.ctarget = null;
-  }
-  target = searchTargets(maxMonsterHP, minMonsterXP, target);
   if ((!target || !in_attack_range(target)) && pocket && get_player(pocket) &&
       !pocket.rip) {
     var p = get_player(pocket);
     move(p.real_x, p.real_y);
   }
-  if (target && target.players) {
-    doPVP(target);
-  } else if (target && target.type === 'character' && 
+  if (target && target.type === 'character' && 
       character.ctype === 'priest' && party.includes(target.name)) {
     healPlayer(target);
   } else if (parent.pvp && target && target.type === 'character') {
@@ -1011,7 +1019,8 @@ function main() { // move and attack code
 }
 
 setCorrectingInterval(attackLoop, 1000 / character.frequency + attackLoopDelay);
-setCorrectingInterval(main, loopInterval);
+setCorrectingInterval(main, 250);
+setCorrectingInterval(targets, 100);
 if (character.ctype === 'warrior') {
   keyItems['shield'] = [];
   keyItems['blade'] = [];
