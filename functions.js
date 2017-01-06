@@ -406,7 +406,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
       }
     }
     var cx = current.real_x, cy = current.real_y;
-    if ((!target || target.type !== 'character') &&
+    if (attackMonsterToggle && (!target || target.type !== 'character') &&
         (!current.target || party.includes(current.target)) &&
         current.type === 'monster' && !current.dead && 
         parent.distance(character, current) <= maxMonsterDistance &&
@@ -977,7 +977,7 @@ function targets() {
   var t = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (t && t.players) {
     doPVP(t);
-  } else if (t.type !== 'monster' || attackMonsterToggle){
+  } else {
     change_target(t);
   }
   if (t && t.type === 'character' && !party.includes(t.name) ||
