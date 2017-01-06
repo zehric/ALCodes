@@ -997,7 +997,10 @@ function main() { // move and attack code
   if (fledSuccess() && 
       strongEnemy && new Date() - strongEnemy >= 60000 &&
       character.invis) {
-    attackMonster(get_nearest_monster());
+    let t = get_nearest_monster();
+    change_target(t);
+    attackMonster(t);
+    
   } else if (character.max_hp - character.hp <= useHP) {
     tpBack();
   }
