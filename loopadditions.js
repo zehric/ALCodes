@@ -33,17 +33,41 @@ loopAddition = function () {
   }
 };
 
-// batcave stealing and snake switching
+// mvamp stealing
+handle_command = function (command, args) {
+  if (command === 'checkmvamp') {
+    game_log(new Date(lastmvamp.getTime() + 1080000) - new Date());
+  }
+}
 var lastmvamp;
+var tped = false;
 loopAddition = function () {
+  if (new Date() - lastmvamp > 1020000 && new Date() - lastmvamp < 1020100) {
+    show_json('1 minute to mvamp');
+    useAbilities = false;
+  }
   if (parent.ctarget && parent.ctarget.mtype === 'mvampire' 
       && parent.ctarget.dead) {
     lastmvamp = new Date();
     pathBack();
+    tped = false;
   }
-  if (character.map !== 'halloween' && lastmvamp && 
-      new Date() - lastmvamp > 1075000) {
+  var interval;
+  if (character.map !== 'batcave' && lastmvamp && 
+      new Date() - lastmvamp > 1075000 && !tped) {
     parent.socket.emit('transport', {to: 'batcave'});
-  setTimeout(function () {currentPoint = null; currentPath = null; move(0,0);}, 100);
+    useAbilities = 10000;
+    setTimeout(function () {
+      currentPoint = null; currentPath = null; move(50, 8);
+      interval = setInterval(function () {
+        change_target(searchTargets(100000, 100000, parent.ctarget));
+        var t = get_target();
+        if (t && t.mtype === 'mvampire') {
+          supershot(t);
+		  clearInterval(interval);
+        }
+      }, 0)
+    }, 200);
+    tped = true;
   }
 }

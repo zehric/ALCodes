@@ -396,7 +396,7 @@ function searchTargets(maxHP, minXP, currentTarget) {
           current.hp / current.max_hp < target.hp / target.max_hp)) {
       target = current;
     } else if (priorityMonsters.includes(current.mtype) && (!target ||
-        !party.includes(target.name))) {
+        !party.includes(target.name)) && attackMonsterToggle) {
       if (tanks.includes(current.target) || solo) {
         target = current;
       } else {
@@ -1014,7 +1014,8 @@ function main() { // move and attack code
   if (target && target.type === 'character' && 
       character.ctype === 'priest' && party.includes(target.name)) {
     healPlayer(target);
-  } else if (parent.pvp && target && target.type === 'character') {
+  } else if (parent.pvp && target && target.type === 'character' &&
+      !party.includes(target.name)) {
     attackPlayer(target);
   } else if (attackMonsterToggle) {
     attackMonster(target);
