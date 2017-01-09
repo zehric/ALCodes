@@ -38,8 +38,8 @@ if (can_move_to(sx, sy)) {
   spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
-var attackMonsterToggle = !alwaysFight, ov = alwaysFight;
-var alwaysAttackTargeted = false;
+var attackMonsterToggle = !alwaysFight;
+var alwaysAttackTargeted = 0;
 var goBack = true;
 function keybindings(e) {
   if (parent.$("input:focus").length > 0 || 
@@ -51,26 +51,23 @@ function keybindings(e) {
   }
   if (e.keyCode === 113) {
     parent.socket.emit('transport', {to: 'bank'});
+    clearPath();
   } else if (e.keyCode === 16) {
     parent.render_transports_npc();
   } else if (e.keyCode === 192) {
     goBack = false;
-    game_log('Auto TP Back Disabled. Reenable with -');
-    parent.socket.emit('transport', {to: 'jail'});
+    clearPath();
+    game_log('Auto-TP-Back Disabled. Reenable with -');
+    jail();
   } else if (e.keyCode === 221) {
     if (get_targeted_monster()) parent.ctarget = null;
-    currentPath = null;
-    currentPoint = null;
+    clearPath();
     attackMonsterToggle = !attackMonsterToggle;
-    ov = !ov;
-    game_log('Attack monsters: ' + attackMonsterToggle);
-  } else if (e.keyCode === 219) {
-    kite = !kite;
+    game_log('Target monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 187) {
     parent.ctarget = null;
-    currentPath = null;
-    currentPoint = null;
-    alwaysAttackTargeted = !alwaysAttackTargeted;
+    clearPath();
+    alwaysAttackTargeted = (alwaysAttackTargeted + 1) % 3;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
   } else if (e.keyCode === 189) {
     goBack = !goBack;
@@ -96,10 +93,7 @@ on_destroy = function () {
   parent.window.removeEventListener('keydown', keybindings);
 };
 
-parent.map.on('mousedown', function () {
-  currentPath = null;
-  currentPoint = null;
-});
+parent.map.on('mousedown', clearPath);
 
 var lastDeath;
 handle_death = function () {
@@ -114,6 +108,16 @@ handle_death = function () {
   setTimeout(flee, timer + 200);
   return true;
 };
+
+handle_command = function (command, args) {
+  if (command === 'tp') {
+    if (args in parent.G.maps) {
+      parent.socket.emit('transport', {to: args});
+    } else {
+      game_log('Map ' + args + ' not found.');
+    }
+  }
+}
 
 on_party_invite = function (name) {
   if (party.includes(name)) {
@@ -313,13 +317,11 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     move(character.real_x + (dist + character.range) * Math.cos(theta),
          character.real_y + (dist + character.range) * Math.sin(theta));
   } else if (dist > 0) {
-    currentPath = null;
-    currentPoint = null;
+    clearPath();
     move(newX, newY);
   } else if ((kite || forceKite) && 
       (!lastAdjust || new Date() - lastAdjust > 300)) {
-    currentPath = null;
-    currentPoint = null;
+    clearPath();
     var farX = character.real_x + (dist - wkr) * Math.cos(theta);
     var farY = character.real_y + (dist - wkr) * Math.sin(theta);
     var counter = 1;
@@ -360,8 +362,7 @@ function rangeMove(dist, theta, forceKite, isPVP) {
     lastTheta = theta;
     move(newX, newY);
   } else if (kite || forceKite) {
-    currentPath = null;
-    currentPoint = null;
+    clearPath();
     move(character.real_x + dist * Math.cos(lastTheta),
          character.real_y + dist * Math.sin(lastTheta));
   }
@@ -642,7 +643,7 @@ function fledSuccess() {
   return character.map === 'jail';
 }
 
-function tp() {
+function jail() {
   parent.socket.emit('transport', {to: 'jail'});
 }
 function flee(entity) {
@@ -651,12 +652,12 @@ function flee(entity) {
   }
   if (character.ctype === 'rogue' && entity && entity.type === 'character' && 
       entity.ctype === 'rogue' && new Date() < parent.next_transport) {
-    setTimeout(tp, parent.next_transport - new Date() + 10);
+    setTimeout(jail, parent.next_transport - new Date() + 10);
   } else if (!entity || entity.type === 'character' && 
         entity.ctype === 'rogue' || 
       character.ctype !== 'rogue' || parent.next_skill.invis && 
       new Date() < parent.next_skill.invis) {
-    tp();
+    jail();
   } else if (entity.dead || entity.rip) {
     return;
   }
@@ -667,8 +668,8 @@ function flee(entity) {
 }
 
 function attackPlayer(player) {
+  if (alwaysAttackTargeted === 1) return;
   set_message('Attacking ' + player.name);
-  // change_target(player);
   var distParams = canRangeMove(player);
   if (!in_attack_range(player) && 
       (character.range <= 50 || player.range >= 50 ||
@@ -697,15 +698,13 @@ function attackMonster(target) {
     set_message('No monsters');
   } else {
     set_message('Attacking ' + target.mtype);
-    // change_target(target);
     if (!distParams.canMove && !can_move_to(target) && 
         !in_attack_range(target)) {
       if ((!currentPath || currentPath.length === 0) && pathfindTo) {
         currentPath = pathfind(target.real_x, target.real_y);
       }
     } else if (target && !target.dead && !target.rip) {
-      currentPath = null;
-      currentPoint = null;
+      clearPath();
       rangeMove(distParams.dist, distParams.theta, 
                 priorityMonsters.includes(target.mtype) && solo && 
                   character.range > 50);
@@ -715,7 +714,6 @@ function attackMonster(target) {
 
 function healPlayer(player) {
   set_message('Healing ' + player.name);
-  // change_target(player);
   var distParams = canRangeMove(player);
   if (!distParams.canMove && !can_move_to(player) && !in_attack_range(player)) {
     if (!currentPath || currentPath.length === 0) {
@@ -732,7 +730,7 @@ function attackLoop() {
   if (!t || t.dead || t.rip || 
       character.invis && (strongEnemy && new Date() - strongEnemy <= 60000 && 
         (!parent.next_transport || new Date() >= parent.next_transport) ||
-      character.max_hp - character.hp > useHP)) {
+      character.max_hp - character.hp > useHP) || alwaysAttackTargeted === 1) {
     return;
   }
   if (t && party.includes(t.name) && character.ctype === 'priest' && 
@@ -891,8 +889,10 @@ function tpBack() {
   }
 }
 
+var amtSave = attackMonsterToggle;
 function pathBack() {
   if (!spawnPath) return;
+  amtSave = attackMonsterToggle;
   attackMonsterToggle = false;
   if (character.map !== lastMap) {
     parent.socket.emit('transport', {to: lastMap});
@@ -911,12 +911,11 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if (!ov && (!currentPath || !currentPath.length) && (!currentPoint ||
+  if ((currentPath && !currentPath.length) && (!currentPoint ||
       character.real_x === currentPoint.x && 
       character.real_y === currentPoint.y)) {
-    attackMonsterToggle = true;
-    currentPath = null;
-    currentPoint = null;
+    attackMonsterToggle = amtSave;
+    clearPath();
   }
   if (!currentPath || !currentPath.length) {
     return;
@@ -932,8 +931,7 @@ function pathfindMove() {
       currentPoint && (character.going_x !== currentPoint.x && 
       character.going_y !== currentPoint.y && 
       !can_move_to(currentPoint.x, currentPoint.y))) {
-    currentPath = null;
-    currentPoint = null;
+    clearPath();
   }
 }
 
@@ -961,12 +959,18 @@ function pathfind(x, y, x2, y2) {
   return path;
 }
 
+function clearPath() {
+  currentPath = null;
+  currentPoint = null;
+}
+
 function targets() {
   if (character.rip) return;
   searchInv();
   uceItem();
   potions();
   loopAddition();
+  if (!doAttack) return;
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
@@ -989,7 +993,6 @@ function targets() {
 function main() { // move and attack code
   if (character.rip) return;
   loot();
-  if (!doAttack) return;
   if (character.invis && strongEnemy && 
       new Date() - strongEnemy < 60000) return;
   if (fledSuccess() && 
@@ -1001,6 +1004,7 @@ function main() { // move and attack code
     tpBack();
   }
   pathfindMove();
+  if (!doAttack) return;
   var target = get_target();
   if ((!target || !in_attack_range(target)) && pocket && get_player(pocket) &&
       !pocket.rip) {
