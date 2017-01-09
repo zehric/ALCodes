@@ -38,7 +38,7 @@ if (can_move_to(sx, sy)) {
   spawnPath = pathfind(sx, sy, character.real_x, character.real_y);
 }
 
-var attackMonsterToggle = !alwaysFight;
+var attackMonsterToggle = !alwaysFight, overrideAMT = alwaysFight;
 var alwaysAttackTargeted = 0;
 var goBack = true;
 function keybindings(e) {
@@ -63,9 +63,10 @@ function keybindings(e) {
     if (get_targeted_monster()) parent.ctarget = null;
     clearPath();
     attackMonsterToggle = !attackMonsterToggle;
+    overrideAMT = !overrideAMT;
     game_log('Target monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 187) {
-    parent.ctarget = null;
+    if (!alwaysAttackTargeted) parent.ctarget = null;
     clearPath();
     alwaysAttackTargeted = (alwaysAttackTargeted + 1) % 3;
     game_log('Manual Targeting: ' + alwaysAttackTargeted);
@@ -893,7 +894,6 @@ var amtSave = attackMonsterToggle;
 function pathBack() {
   if (!spawnPath || character.map === lastMap && 
     character.real_x === lastPos[0] && character.real_y === lastPos[1]) return;
-  amtSave = attackMonsterToggle;
   attackMonsterToggle = false;
   if (character.map !== lastMap) {
     parent.socket.emit('transport', {to: lastMap});
@@ -903,7 +903,7 @@ function pathBack() {
     currentPath = spawnPath.slice();
   } else {
     if (can_move_to(lastPos[0], lastPos[1])) {
-      move(lastPos[0], lastPos[1]);
+      currentPath = [{x: lastPos[0], y: lastPos[1]}];
     } else {
       currentPath = pathfind(lastPos[0], lastPos[1]);
     }
@@ -912,10 +912,10 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if ((currentPath && !currentPath.length) && (!currentPoint ||
+  if (!overrideAMT && (currentPath && !currentPath.length) && (!currentPoint ||
       character.real_x === currentPoint.x && 
       character.real_y === currentPoint.y)) {
-    attackMonsterToggle = amtSave;
+    attackMonsterToggle = true;
     clearPath();
   }
   if (!currentPath || !currentPath.length) {
@@ -977,6 +977,7 @@ function targets() {
     target = null;
     parent.ctarget = null;
   }
+  if (alwaysAttackTargeted === 1) return;
   var t = searchTargets(maxMonsterHP, minMonsterXP, target);
   if (t && t.players) {
     doPVP(t);
