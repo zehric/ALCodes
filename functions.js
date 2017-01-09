@@ -63,7 +63,7 @@ function keybindings(e) {
     if (get_targeted_monster()) parent.ctarget = null;
     clearPath();
     attackMonsterToggle = !attackMonsterToggle;
-    overrideAMT = !overrideAMT;
+    overrideAMT = attackMonsterToggle && !overrideAMT;
     game_log('Target monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 187) {
     if (!alwaysAttackTargeted) parent.ctarget = null;
@@ -911,9 +911,9 @@ function pathBack() {
 
 var currentPoint;
 function pathfindMove() {
-  if (!overrideAMT && (currentPath && !currentPath.length) && (!currentPoint ||
+  if (!overrideAMT && (!currentPath || !currentPath.length) && (!currentPoint ||
       character.real_x === currentPoint.x && 
-      character.real_y === currentPoint.y)) {
+      character.real_y === currentPoint.y) && !attackMonsterToggle) {
     attackMonsterToggle = true;
     clearPath();
   }
