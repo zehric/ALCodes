@@ -890,7 +890,6 @@ function tpBack() {
   }
 }
 
-var amtSave = attackMonsterToggle;
 function pathBack() {
   if (!spawnPath || character.map === lastMap && 
     character.real_x === lastPos[0] && character.real_y === lastPos[1]) return;
