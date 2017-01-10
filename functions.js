@@ -966,6 +966,8 @@ function targets() {
   potions();
   loopAddition();
   if (!doAttack) return;
+  if (character.invis && strongEnemy && 
+      new Date() - strongEnemy < 60000) return;  
   var target = get_target();
   if (target && (target.dead || target.rip)) {
     target = null;
