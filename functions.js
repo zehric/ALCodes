@@ -63,7 +63,7 @@ function keybindings(e) {
     if (get_targeted_monster()) parent.ctarget = null;
     clearPath();
     attackMonsterToggle = !attackMonsterToggle;
-    overrideAMT = attackMonsterToggle && !overrideAMT;
+    overrideAMT = !attackMonsterToggle && !overrideAMT;
     game_log('Target monsters: ' + attackMonsterToggle);
   } else if (e.keyCode === 187) {
     if (!alwaysAttackTargeted) parent.ctarget = null;
