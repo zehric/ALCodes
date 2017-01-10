@@ -612,17 +612,12 @@ function doPVP(targets) {
       }
     } else {
       flee(strongestEnemy);
-      game_log('Fled from ' + enemies.map(function (e) {
-        return e.name;
-      }));
+      let names = enemies.map(function (e) { return e.name; });
+      game_log('Fled from ' + names);
       if (character.invis) {
-        set_message('Fled from ' + enemies.map(function (e) {
-          return e.name;
-        }));
+        set_message('Fled from ' + names);
       } else if (character.afk) {
-        show_json('Fled from ' + enemies.map(function (e) {
-          return e.name;
-        }));
+        show_json('Fled from ' + names);
       }
     }
   } else {
@@ -1018,7 +1013,7 @@ function main() { // move and attack code
   } else if (parent.pvp && target && target.type === 'character' &&
       !party.includes(target.name)) {
     attackPlayer(target);
-  } else if (attackMonsterToggle) {
+  } else if (attackMonsterToggle && target && target.type === 'monster') {
     attackMonster(target);
   }
 }
