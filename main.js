@@ -25,12 +25,9 @@ yBoundaries = [];
 // if this much away from save location, return to save location
 returnDistance = Infinity; 
 
-party = ['Tools', 'Glass', 'Toolss', 'bleevl', 'bleevlsss', 'AidElk', 
-         'Edylc', 'LeonXu', 'LeonXu2', 'LeonXu4', 'iloveyou56', 'nopo',
-         'bleeeeevl'];
+party = [];
 
-// weak characters that scary people use to get us good
-fleeList = ['Ifrit', 'jacob', 'Kill']; 
+fleeList = []; 
 
 // use hpot or mpot when lacking this much
 useHP = 250;
@@ -47,7 +44,7 @@ priorityMonsters = ['mvampire'];
 solo = false; // try to solo the priority monster
 
 // if not empty, only attacks priority monsters that are targeting those listed
-tanks = ['bleevl'];
+tanks = [];
 
 loopInterval = 200; // increase this if you are disconnecting
 attackLoopDelay = 30; // increase this if your attacks are missing often
@@ -61,7 +58,7 @@ healAt = 0.7;
 pocket = ''; // who to follow when healing
 
 $.getScript('https://cdn.rawgit.com/qiao/heap.js/master/lib/heap.js', function () {
-  $.getScript('https://cdn.rawgit.com/zehric/6bcb8e8963c74cc2b2b6dcc270d18411/raw/e308eb189755e0959bcfc386fa2cfbd36d5ea792/pathfinding.js', function () {
-    $.getScript('https://rawgit.com/zehric/ALCodes/master/functions.js');
+  $.getScript('https://cdn.rawgit.com/zehric/6bcb8e8963c74cc2b2b6dcc270d18411/raw/35597c220d6ac87d9deae2ccfec8bef7c9560159/pathfinding.js', function () {
+    $.getScript('https://rawgit.com/zehric/35c89f213fa5c4b564438dd70f40118f/raw/functions.js');
   });
 });
